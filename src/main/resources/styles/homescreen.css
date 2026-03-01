@@ -1,0 +1,8 @@
+.pane-background {
+
+    -fx-background-color: black;
+}
+
+#button1 {
+    -fx-background-color: none;
+}

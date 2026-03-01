@@ -1,0 +1,84 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "test3.tmx",
+    "expandedProjectPaths": [
+        "."
+    ],
+    "fileStates": {
+        "/home/alem/Templates/test.tmx": {
+            "scale": 0.4942968749999999,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 960.9609609609612,
+                "y": 978.1571044728942
+            }
+        },
+        "/home/alem/Templates/test.tmx#test-tileset": {
+            "scaleInDock": 1
+        },
+        "test.tmx": {
+            "scale": 0.4942968749999999,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 960.9609609609612,
+                "y": 959.949423107318
+            }
+        },
+        "test.tmx#test-tileset": {
+            "scaleInDock": 1
+        },
+        "test.tmx#tileset": {
+            "scaleInDock": 1
+        },
+        "test2.tmx": {
+            "scale": 0.354765625,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 961.1979740145342,
+                "y": 959.7885928209647
+            }
+        },
+        "test2.tmx#test-tileset": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "test3.tmx": {
+            "scale": 0.5,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 960,
+                "y": 1025
+            }
+        },
+        "test3.tmx#test-tileset": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        }
+    },
+    "last.exportedFilePath": "/home/alem/IdeaProjects/AmongU/src/main/resources/maps",
+    "last.imagePath": "/home/alem/IdeaProjects/AmongU/src/main/resources/tilesets",
+    "map.height": 30,
+    "map.lastUsedExportFilter": "All Files (*)",
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 64,
+    "map.tileWidth": 64,
+    "openFiles": [
+        "test3.tmx"
+    ],
+    "project": "test.tiled-project",
+    "property.type": "bool",
+    "recentFiles": [
+        "test3.tmx",
+        "/home/alem/Templates/test.tmx",
+        "test2.tmx",
+        "test.tmx"
+    ],
+    "tileset.embedInMap": true,
+    "tileset.tileSize": {
+        "height": 64,
+        "width": 64
+    }
+}

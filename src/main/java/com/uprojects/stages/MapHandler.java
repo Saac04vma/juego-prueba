@@ -1,6 +1,8 @@
 package com.uprojects.stages;
 
 
+import com.esotericsoftware.kryo.io.Input;
+import com.uprojects.core.Tarea;
 import com.uprojects.entities.Player;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Rectangle2D;
@@ -10,8 +12,10 @@ import org.mapeditor.core.*;
 import org.mapeditor.io.TMXMapReader;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -23,15 +27,15 @@ public class MapHandler {
     private Map map;
     private Player player;
     private HashMap<Tile, Image> tileImages;
-    private HashMap<Tile, TileData> tilesData;
+
 
     public MapHandler(Player player1) {
-        this.player = player1;
+
         this.loadMapFile();
+        this.player = player1;
         this.tileImages = new HashMap<>();
-        this.tilesData = new HashMap<>();
         this.buffToFxImage();
-        //this.loadMapData(this.map);
+
     }
 
 
@@ -45,7 +49,9 @@ public class MapHandler {
             TMXMapReader mapReader = new TMXMapReader();
 
 
-            this.map = mapReader.readMap("src/main/resources/maps/test3.tmx");
+            this.map = mapReader.readMap("src/main/resources/maps/mapa.tmx");
+
+            //this.map = mapReader.readMap("src/main/resources/maps/test3.tmx");
 
             if (this.map == null) {
                 System.out.println("MAP NOT LOADED");
@@ -68,27 +74,60 @@ public class MapHandler {
 
     private void buffToFxImage() {
 
+        if (this.map == null) {
+            System.out.println("[ADVERTENCIA] El mapa no ha sido cargado. No puedo extraer los tiles");
+            return;
+        }
+
         try {
 
 
             int tileW = map.getTileWidth();
             int tileH = map.getTileHeight();
 
+            String dir = new File("src/main/resources/maps/mapa.tmx").getParent();
+            int tsIndex = 0;
             for (TileSet ts : this.map.getTileSets()) {
 
 
                 //InputStream imgSource = ts.getImageData().getSource().getClass().getResourceAsStream("/maps/");
-                InputStream imgSource = getClass().getResourceAsStream("/maps/tilesets/tileset.png");
+                //InputStream imgSource = getClass().getResourceAsStream("/maps/tilesets/tileset.png");
 
+                System.out.println("Processing TileSet: " + ts.getName());
 
-                if (imgSource == null) {
-                    System.out.println("No existe el tileset -> /tilesets/tileset.png");
+                // Try getTilebmpFile() first
+                String imagePath = ts.getTilebmpFile();
+
+                if (imagePath == null) {
+                    imagePath = "/maps/tilesets/" + ts.getName() + ".png";
+                }
+
+                /*
+                // Fallback: manually parse TMX
+                if (imagePath == null || imagePath.isEmpty()) {
+                    System.out.println("  getTilebmpFile() returned null, parsing TMX manually...");
+                    imagePath = extractTilesetImagePath(dir, tsIndex);
+                }
+
+                if (imagePath == null || imagePath.isEmpty()) {
+                    System.out.println("  [SKIP] TileSet sin imagen: " + ts.getName());
+                    tsIndex++;
                     continue;
                 }
 
+                System.out.println("  Image path: " + imagePath);
+*/
 
-                BufferedImage imgSet = ImageIO.read(imgSource);
-                //if (fullSheet == null) continue;
+                InputStream imgSrc = getClass().getResourceAsStream(imagePath);
+
+                if (imgSrc == null) {
+                    System.out.println("  [ERROR] No se encontró: " + imagePath);
+                    System.out.println("  Available resources: Check src/main/resources/" + imagePath);
+                    tsIndex++;
+                    continue;
+                }
+
+                BufferedImage imgSet = ImageIO.read(imgSrc);
 
 
                 // Calculate how many columns are in the tileset image
@@ -100,11 +139,6 @@ public class MapHandler {
 
                     int id = tile.getId();
 
-                    /*
-                    BufferedImage awtImg = (BufferedImage) tile.getImage();
-                    Image fxImg = SwingFXUtils.toFXImage(awtImg, null);
-                    this.tileImages.put(id, fxImg);
-*/
 
                     int tileXPos = (id % columns) * tileW;
                     int tileYPos = (id / columns) * tileH;
@@ -114,12 +148,6 @@ public class MapHandler {
                     tileImages.put(tile, fxImg);
 
 
-                    //                  if (tileXPos + tileW <= fullSheet.getWidth() && tileYPos + tileH <= fullSheet.getHeight()) {
-                    // GraphicsContext solo acepta la clase JavaFx Image, libtiled devuelve BufferedImage. Debemos convertirlo antes de poder pintar el mapa
-                    //BufferedImage subImg = fullSheet.getSubimage(tileXPos, tileYPos, tileW, tileH);
-                    //Image fxImg = SwingFXUtils.toFXImage(tile.getImage(), null);
-                    //tileImages.put(tile, fxImg);
-                    //                }
                 }
             }
         } catch (Exception e) {
@@ -127,32 +155,6 @@ public class MapHandler {
         }
     }
 
-    private void loadMapData(Map map) {
-
-        for (TileSet ts : map.getTileSets()) {
-            BufferedImage tileImg = ts.getFirstTile().getImage();
-            Image fxImg = SwingFXUtils.toFXImage(tileImg, null);
-
-            int tileW = ts.getTileWidth();
-            int tileH = ts.getTileHeight();
-            int columns = ts.getColumns();
-            //int margins = ts.getTileMargin();
-            //int spacing = ts.getTileSpacing();
-
-
-            for (Tile tile : ts) {
-                int id = tile.getId();
-
-                // Calculamos la posicion x,y de la cuadricula
-                double posX = (id % columns) * (tileW);
-                double posY = (id / columns) * (tileH);
-
-
-                Rectangle2D limites = new Rectangle2D(posX, posY, tileW, tileH);
-                tilesData.put(tile, new TileData(fxImg, limites));
-            }
-        }
-    }
 
     public Image getFxImage(Tile tile) {
 
@@ -171,6 +173,7 @@ public class MapHandler {
 */
         return this.tileImages.get(tile);
     }
+
 
     public void draw(GraphicsContext gc, int zoom) {
 
@@ -254,5 +257,166 @@ public class MapHandler {
         }
     }
 
+    public String objetoInteractuable(int columna, int fila) {
+        if (columna < 0 || columna >= map.getWidth() || fila < 0 || fila >= map.getHeight()) {
+            return null;
+        }
 
+        for (MapLayer layer : map.getLayers()) {
+            if (layer instanceof TileLayer tileLayer) {
+                Tile tile = tileLayer.getTileAt(columna, fila);
+
+                if (tile != null && tile.getProperties() != null) {
+                    String interactuable = tile.getProperties().getProperty("interactuable");
+
+                    if ("true".equals(interactuable)) {
+                        String tarea = tile.getProperties().getProperty("tarea");
+
+                        return tarea;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public String getTipoTarea(int columna, int fila) {
+        if (columna < 0 || columna >= map.getWidth() || fila < 0 || fila >= map.getHeight()) {
+            return null;
+        }
+
+        return "";
+    }
+
+    public List<Tarea> calcularPosicionTareas() {
+
+        List<Tarea> estaciones = new ArrayList<>();
+        int mapW = map.getWidth();
+        int mapH = map.getHeight();
+        boolean[][] tileVisitados = new boolean[mapW][mapH];
+
+        for (MapLayer layer : map.getLayers()) {
+
+            if (layer instanceof TileLayer tileLayer) {
+
+                for (int fila = 0; fila < mapH; fila++) {
+                    for (int col = 0; col < mapW; col++) {
+
+                        Tile tile = tileLayer.getTileAt(col, fila);
+                        if (tile != null && !tileVisitados[col][fila]) {
+                            String tarea = tile.getProperties().getProperty("tarea");
+
+                            if (tarea != null) {
+                                Tarea estacion = procesarEstacionTarea(tileLayer, col, fila, tarea, tileVisitados);
+
+                                estaciones.add(estacion);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return estaciones;
+    }
+
+    // Buscamos los tiles adyacentes de un tile marcado como tarea para mapear las coordenadas del mundo de dicha tarea (estacion en Among Us)
+    private Tarea procesarEstacionTarea(TileLayer tLayer, int comienzoX, int comienzoY, String nombreTarea, boolean[][] visitados) {
+        int minX = comienzoX;
+        int topX = comienzoX;
+        int minY = comienzoY;
+        int topY = comienzoY;
+
+        int layerW = tLayer.getBounds().width;
+        int layerH = tLayer.getBounds().height;
+
+        // Buscando hacia la derecha
+        while (topX + 1 < layerW) {
+            Tile nextTile = tLayer.getTileAt(topX + 1, comienzoY);
+
+            if (nextTile != null && nextTile.getProperties().getProperty(nombreTarea) != null) {
+                topX++;
+            } else {
+                break;
+            }
+        }
+
+        // Buscando hacia abajo
+        while (topY + 1 < layerH) {
+            Tile nextTile = tLayer.getTileAt(comienzoX, topY + 1);
+
+            if (nextTile != null && nextTile.getProperties().getProperty(nombreTarea) != null) {
+                topY++;
+            } else {
+                break;
+            }
+        }
+
+
+        // Marcamos como visitados los "nodos" (tiles en este caso)
+        for (int tileX = minX; tileX <= topX; tileX++) {
+            for (int tileY = minY; tileY <= topY; tileY++) {
+                visitados[tileX][tileY] = true;
+            }
+        }
+
+        // Mapeamos a coordenadas para poder crear el objeto
+        int mapTileW = map.getTileWidth();
+        int mapTileH = map.getTileHeight();
+        int worldX = minX * mapTileW;
+        int worldY = minY * mapTileH;
+        int tareaWidth = (topX - minX + 1) * mapTileW;
+        int tareaHeight = (topY - minY + 1) * mapTileH;
+
+        return new Tarea(worldX, worldY, tareaWidth, tareaHeight, nombreTarea);
+    }
+
+    public boolean tileSolido(int columna, int fila) {
+
+        if (columna < 0 || columna >= map.getWidth() || fila < 0 || fila >= map.getHeight()) {
+            return true;
+        }
+
+        for (MapLayer layer : map.getLayers()) {
+            if (layer instanceof TileLayer tileLayer) {
+                Tile tile = tileLayer.getTileAt(columna, fila);
+
+                if (tile != null) {
+                    String colision = tile.getProperties().getProperty("Solido");
+
+                    if ("true".equals(colision)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public int getTileSize() {
+        return map.getTileWidth(); // Altura y anchura son iguales 32x32
+    }
+
+    private String extractTilesetImagePath(String tmxPath, int tilesetIndex) {
+        try {
+            javax.xml.parsers.DocumentBuilderFactory factory = javax.xml.parsers.DocumentBuilderFactory.newInstance();
+            javax.xml.parsers.DocumentBuilder builder = factory.newDocumentBuilder();
+            org.w3c.dom.Document doc = builder.parse(new java.io.FileInputStream(tmxPath));
+
+            org.w3c.dom.NodeList tilesets = doc.getElementsByTagName("tileset");
+            if (tilesetIndex < tilesets.getLength()) {
+                org.w3c.dom.Element tileset = (org.w3c.dom.Element) tilesets.item(tilesetIndex);
+                org.w3c.dom.NodeList images = tileset.getElementsByTagName("image");
+                if (images.getLength() > 0) {
+                    return images.item(0).getAttributes()
+                            .getNamedItem("source").getNodeValue();
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("  [ERROR] Failed to parse TMX for image path: " + e.getMessage());
+        }
+        return null;
+    }
 }

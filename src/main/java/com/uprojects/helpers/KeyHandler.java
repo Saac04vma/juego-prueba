@@ -12,6 +12,7 @@ public class KeyHandler {
 
     protected boolean upPressed, downPressed, leftPressed, rightPressed;
     protected Set<KeyCode> pressedKeys;
+    private Runnable interactionListener;
 
     public KeyHandler(Scene scene) {
 
@@ -29,17 +30,38 @@ public class KeyHandler {
          */
     }
 
+    public void setInteractionListener(Runnable interaction) {
+        this.interactionListener = interaction;
+    }
 
     public void anclarScene(Scene scene) {
 
-        scene.addEventFilter(KeyEvent.KEY_PRESSED, e ->
-                this.pressedKeys.add(e.getCode())
+        scene.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+                    this.pressedKeys.add(e.getCode());
+
+                    /*
+                    if (e.getCode() == KeyCode.E) {
+                        if (interactionListener != null) {
+                            this.interactionListener.run();
+                        }
+                    }
+
+                     */
+                }
         );
         scene.addEventFilter(KeyEvent.KEY_RELEASED, e -> this.pressedKeys.remove(e.getCode()));
     }
 
     public boolean isMoving() {
         return pressedKeys.contains(KeyCode.W) || pressedKeys.contains(KeyCode.S) || pressedKeys.contains(KeyCode.A) || pressedKeys.contains(KeyCode.D);
+    }
+
+    public boolean accionarTarea() {
+        return pressedKeys.contains(KeyCode.E);
+    }
+
+    public void resetPressedKeys() {
+        this.pressedKeys.clear();
     }
 
     public boolean getUpPressed() {

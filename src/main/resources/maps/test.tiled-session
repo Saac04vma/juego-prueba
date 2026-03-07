@@ -7,7 +7,11 @@
     "expandedProjectPaths": [
         "."
     ],
+    "file.lastUsedOpenFilter": "All Files (*)",
     "fileStates": {
+        "": {
+            "scaleInEditor": 1
+        },
         "/home/alem/Templates/test.tmx": {
             "scale": 0.4942968749999999,
             "selectedLayer": 0,
@@ -49,12 +53,12 @@
             "scale": 0.5,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 960,
-                "y": 1025
+                "x": 1312,
+                "y": 1219
             }
         },
         "test3.tmx#test-tileset": {
-            "scaleInDock": 1,
+            "scaleInDock": 0.75,
             "scaleInEditor": 1
         }
     },
@@ -69,7 +73,7 @@
         "test3.tmx"
     ],
     "project": "test.tiled-project",
-    "property.type": "bool",
+    "property.type": "string",
     "recentFiles": [
         "test3.tmx",
         "/home/alem/Templates/test.tmx",

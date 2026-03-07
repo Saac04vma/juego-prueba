@@ -6,10 +6,13 @@ module com.uprojects.amongus {
     requires java.xml.bind;
     requires javafx.fxml;
     requires javafx.graphics;
+    requires com.esotericsoftware.kryo;
 
     exports com.uprojects.screens;
+    exports com.uprojects.stages;
     exports com.uprojects.entities;
     exports com.uprojects.helpers;
+    exports com.uprojects.core;
     opens com.uprojects.launcher to javafx.graphics;
     opens com.uprojects.screens to javafx.fxml;
     opens maps to libtiled, javafx.graphics;

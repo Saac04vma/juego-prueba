@@ -1,0 +1,88 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "",
+    "expandedProjectPaths": [
+    ],
+    "file.lastUsedOpenFilter": "All Files (*)",
+    "fileStates": {
+        "": {
+            "scaleInDock": 1
+        },
+        ":/automap-tiles.tsx": {
+            "scaleInDock": 1
+        },
+        "Biblioteca/Biblioteca.tsx": {
+            "scaleInDock": 1.5,
+            "scaleInEditor": 3
+        },
+        "Biblioteca/Pasillos.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Boton principal/Zona_central.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 1
+        },
+        "Cuarto de Electricidad/CuartoElectricidad.tsx": {
+            "scaleInDock": 1.5,
+            "scaleInEditor": 2
+        },
+        "Elementos del mapa/Elementos del mapa.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 5.5
+        },
+        "Estacionamiento.tsx": {
+            "scaleInDock": 2,
+            "scaleInEditor": 5.5
+        },
+        "MapaDefinitivo.tmx": {
+            "scale": 2,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 1662.5,
+                "y": 624.75
+            }
+        },
+        "MapaDefinitivo.tmx#Pasillos": {
+            "scaleInEditor": 1
+        },
+        "Pasillos.tsx": {
+            "scaleInDock": 1.5,
+            "scaleInEditor": 1
+        },
+        "Personaje.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 4
+        },
+        "Sala de informatica/SalaInformatica.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 3
+        }
+    },
+    "last.externalTilesetPath": "C:/Users/User/Desktop/Mapa de AmongUneg/Mapa 1/Biblioteca",
+    "last.imagePath": "C:/Users/User/Desktop/Mapa de AmongUneg/Mapa 1/Elementos del mapa",
+    "map.height": 34,
+    "map.lastUsedFormat": "tmx",
+    "map.width": 60,
+    "openFiles": [
+    ],
+    "project": "Mapa 1.tiled-project",
+    "property.type": "bool",
+    "recentFiles": [
+        "Elementos del mapa/Elementos del mapa.tsx",
+        "Estacionamiento.tsx",
+        "Sala de informatica/SalaInformatica.tsx",
+        "Cuarto de Electricidad/CuartoElectricidad.tsx",
+        "Boton principal/Zona_central.tsx",
+        "Biblioteca/Biblioteca.tsx",
+        "Personaje.tsx",
+        "Pasillos.tsx",
+        "MapaDefinitivo.tmx",
+        "Biblioteca/Pasillos.tsx"
+    ],
+    "tileset.lastUsedFilter": "Todos los archivos (*)",
+    "tileset.lastUsedFormat": "tsx"
+}

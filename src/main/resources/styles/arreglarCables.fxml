@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.uprojects.ui.ArreglarCablesPane?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.paint.Color?>
+
+<fx:root type="com.uprojects.ui.TareaPane" xmlns:fx="http://javafx.com/fxml/1"
+         prefWidth="600.0" prefHeight="400.0" style="-fx-background-color: rgba(0,0,0,0.8);">
+    <children>
+        <Pane layoutX="100.0" layoutY="50.0" prefWidth="400.0" prefHeight="300.0"
+              style="-fx-background-color: #2d2d2d; -fx-border-color: white;">
+            <children>
+
+                <Label fx:id="lblCompletado" layoutX="120.0" layoutY="20.0" style="-fx-text-fill: #00ff00; -fx-font-size: 24px;"/>
+                <Label fx:id="lblTitulo" layoutX="20.0" layoutY="10.0" style="-fx-text-fill: white; -fx-font-size: 18px;"/>
+                <Label fx:id="lblProgreso" layoutX="20.0" layoutY="40.0" style="-fx-text-fill: yellow;"/>
+
+                <Pane fx:id="panelCables" prefWidth="400.0" prefHeight="300.0" mouseTransparent="true" />
+
+                <VBox fx:id="leftBox" layoutX="10.0" layoutY="80.0" spacing="30" />
+                <VBox fx:id="rightBox" layoutX="350.0" layoutY="80.0" spacing="30" />
+
+                <Button fx:id="btnCerrar" text="X" layoutX="360.0" layoutY="10.0" />
+            </children>
+        </Pane>
+    </children>
+</fx:root>

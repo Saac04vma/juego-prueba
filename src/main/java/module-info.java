@@ -13,8 +13,10 @@ module com.uprojects.amongus {
     exports com.uprojects.entities;
     exports com.uprojects.helpers;
     exports com.uprojects.core;
+    exports com.uprojects.ui;
     opens com.uprojects.launcher to javafx.graphics;
     opens com.uprojects.screens to javafx.fxml;
+    opens com.uprojects.ui to javafx.fxml;
     opens maps to libtiled, javafx.graphics;
 
 }

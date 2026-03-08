@@ -1,16 +1,19 @@
 package com.uprojects.core;
 
 import com.uprojects.entities.Player;
+import com.uprojects.ui.TareaPane;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
-public class Tarea {
+public abstract class Tarea {
 
     protected boolean completada = false;
     protected int worldX, worldY;
     protected int width, height;
     protected String nombre;
     protected boolean jugadorCerca;
+    protected TareaPane uiPane; // Pantalla del minijuego
 
     public Tarea(int worldX, int worldY, int width, int height, String nombre) {
         this.worldX = worldX;
@@ -37,7 +40,7 @@ public class Tarea {
 
     public void drawInteractionBox(GraphicsContext gc) {
 
-        if (this.jugadorCerca) {
+        if (this.jugadorCerca && !this.completada) {
             gc.setStroke(Color.YELLOW); // Green if we can interact
             gc.setLineWidth(3);
             gc.setFill(Color.WHITE);
@@ -63,9 +66,30 @@ public class Tarea {
 
     }
 
+    public int getWorldX() {
+        return this.worldX;
+    }
+
+    public int getWorldY() {
+        return this.worldY;
+    }
+
     public String getNombre() {
         return this.nombre;
     }
+
+    public void setUiPane(TareaPane uiPane) {
+        this.uiPane = uiPane;
+        uiPane.setTarea(this);
+    }
+
+    public TareaPane getUiPane() {
+        return this.uiPane;
+    }
+
+    public abstract TareaPane crearUI();
+
+    ;
 
     public void comenzarTarea() {
         this.completada = false;

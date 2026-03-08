@@ -48,7 +48,7 @@ public class Player {
         this.right = new Image[6];
         this.idleL = new Image[4];
         this.idleR = new Image[4];
-        this.areaSolida = new Rectangle(12, 30, 32, 32);
+        this.areaSolida = new Rectangle(8, 16, 16, 14);
         this.getPlayerImage();
         this.resetValues();
 
@@ -75,6 +75,18 @@ public class Player {
     }
 
     public void updatePosition(CollisionChecker collisionChecker) {
+
+        /*
+        System.out.println("=== Collision Debug ===");
+        System.out.println("worldX: " + worldX + " worldY: " + worldY);
+        System.out.println("areaSolida: x=" + areaSolida.x + " y=" + areaSolida.y +
+                " w=" + areaSolida.width + " h=" + areaSolida.height);
+        System.out.println("Solid bounds: Left=" + (worldX + areaSolida.x) +
+                " Right=" + (worldX + areaSolida.x + areaSolida.width) +
+                " Top=" + (worldY + areaSolida.y) +
+                " Bottom=" + (worldY + areaSolida.y + areaSolida.height));
+
+         */
 
         if (paused || killed) {
             return;
@@ -138,6 +150,8 @@ public class Player {
             // Chequeando si hubo una colision antes de mover al personaje
             colision = false;
             //collisionChecker.checkTile(this);
+
+
             if (!collisionChecker.estaChocando(worldX + dx, worldY, this)) {
                 this.worldX += dx;
             }
@@ -145,6 +159,7 @@ public class Player {
             if (!collisionChecker.estaChocando(worldX, worldY + dy, this)) {
                 this.worldY += dy;
             }
+
 
             actualizarSprite();
         } else {

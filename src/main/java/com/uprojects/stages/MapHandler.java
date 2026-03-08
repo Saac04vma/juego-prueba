@@ -2,8 +2,10 @@ package com.uprojects.stages;
 
 
 import com.esotericsoftware.kryo.io.Input;
+import com.uprojects.core.ArreglarCablesTarea;
 import com.uprojects.core.Tarea;
 import com.uprojects.entities.Player;
+import com.uprojects.helpers.TareaFactory;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.canvas.GraphicsContext;
@@ -310,7 +312,11 @@ public class MapHandler {
                             if (tarea != null) {
                                 Tarea estacion = procesarEstacionTarea(tileLayer, col, fila, tarea, tileVisitados);
 
-                                estaciones.add(estacion);
+                                if (estacion != null) {
+
+                                    estaciones.add(estacion);
+                                }
+
                             }
                         }
                     }
@@ -369,14 +375,18 @@ public class MapHandler {
         int tareaWidth = (topX - minX + 1) * mapTileW;
         int tareaHeight = (topY - minY + 1) * mapTileH;
 
-        return new Tarea(worldX, worldY, tareaWidth, tareaHeight, nombreTarea);
+        // Tendra que ser a traves de if, ir detectando cual tarea es. Lo bueno es que son 4 nada mas
+        return TareaFactory.crearTarea(nombreTarea, worldX, worldY, tareaWidth, tareaHeight);
+
     }
 
     public boolean tileSolido(int columna, int fila) {
 
+
         if (columna < 0 || columna >= map.getWidth() || fila < 0 || fila >= map.getHeight()) {
             return true;
         }
+
 
         for (MapLayer layer : map.getLayers()) {
             if (layer instanceof TileLayer tileLayer) {

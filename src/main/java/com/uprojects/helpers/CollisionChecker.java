@@ -32,30 +32,30 @@ public class CollisionChecker {
 
         switch (jugador.getDirection()) {
             case "up" -> {
-                playerTopFila = (playerTopY - jugador.getSpd()) / tilesize;
+                int topFilafutura = (playerTopY - jugador.getSpd()) / tilesize;
 
-                if (mapH.tileSolido(playerLeftColumna, playerTopFila) || mapH.tileSolido(playerRightColumna, playerTopFila)) {
+                if (mapH.tileSolido(playerLeftColumna, topFilafutura) || mapH.tileSolido(playerRightColumna, topFilafutura)) {
                     jugador.setColision(true);
                 }
             }
             case "down" -> {
-                playerBottomFila = (playerBottomY + jugador.getSpd()) / tilesize;
+                int bottomFilaFutura = (playerBottomY + jugador.getSpd()) / tilesize;
 
-                if (mapH.tileSolido(playerLeftColumna, playerBottomFila) || mapH.tileSolido(playerRightColumna, playerBottomFila)) {
+                if (mapH.tileSolido(playerLeftColumna, bottomFilaFutura) || mapH.tileSolido(playerRightColumna, bottomFilaFutura)) {
                     jugador.setColision(true);
                 }
             }
             case "left" -> {
-                playerLeftColumna = (playerLeftX - jugador.getSpd()) / tilesize;
+                int leftColumnaFutura = (playerLeftX - jugador.getSpd()) / tilesize;
 
-                if (mapH.tileSolido(playerLeftColumna, playerTopFila) || mapH.tileSolido(playerRightColumna, playerBottomFila)) {
+                if (mapH.tileSolido(leftColumnaFutura, playerTopFila) || mapH.tileSolido(leftColumnaFutura, playerBottomFila)) {
                     jugador.setColision(true);
                 }
             }
             case "right" -> {
-                playerRightColumna = (playerRightX + jugador.getSpd()) / tilesize;
+                int rightColumnaFutura = (playerRightX + jugador.getSpd()) / tilesize;
 
-                if (mapH.tileSolido(playerRightColumna, playerTopFila) || mapH.tileSolido(playerRightColumna, playerBottomFila)) {
+                if (mapH.tileSolido(rightColumnaFutura, playerTopFila) || mapH.tileSolido(rightColumnaFutura, playerBottomFila)) {
                     jugador.setColision(true);
                 }
             }
@@ -70,9 +70,11 @@ public class CollisionChecker {
 
         // Coordenadas en una posible proxima posicion
         int leftX = nextX - (tilesize / 2) + jugador.areaSolida.x;
-        int rightX = nextX - (tilesize / 2) + jugador.areaSolida.x + jugador.areaSolida.width;
+        //int rightX = nextX - (tilesize / 2) + jugador.areaSolida.x + jugador.areaSolida.width;
+        int rightX = leftX + jugador.areaSolida.width - 1;
         int topY = nextY - (tilesize / 2) + jugador.areaSolida.y;
-        int bottomY = nextY - (tilesize / 2) + jugador.areaSolida.y + jugador.areaSolida.height;
+        //int bottomY = nextY - (tilesize / 2) + jugador.areaSolida.y + jugador.areaSolida.height;
+        int bottomY = topY + jugador.areaSolida.height - 1;
 
 
         int leftColumna = leftX / tilesize;
@@ -83,20 +85,5 @@ public class CollisionChecker {
         return mapH.tileSolido(leftColumna, topFila) || mapH.tileSolido(leftColumna, bottomFila) || mapH.tileSolido(rightColumna, topFila) || mapH.tileSolido(rightColumna, bottomFila);
     }
 
-    public boolean puedeJugarTarea(Player jugador, List<Tarea> tareas) {
 
-
-        int tilesize = mapH.getTileSize();
-
-        int leftColumna = jugador.areaSolida.x / tilesize;
-        int rightColumna = (jugador.areaSolida.x + jugador.areaSolida.width) / tilesize;
-        int topFila = jugador.areaSolida.y / tilesize;
-        int bottomFila = (jugador.areaSolida.y + jugador.areaSolida.height) / tilesize;
-
-        //String cercaDe = mapH.objetoInteractuable(leftColumna, topFila) || mapH.objetoInteractuable(leftColumna, bottomFila) || mapH.objetoInteractuable(rightColumna, topFila) || mapH.objetoInteractuable(rightColumna, bottomFila);
-
-        //if (mapH.objetoInteractuable())
-
-        return false;
-    }
 }

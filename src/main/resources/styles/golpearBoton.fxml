@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+
+<fx:root type="com.uprojects.ui.TareaPane" xmlns:fx="http://javafx.com/fxml/1"
+         prefWidth="600.0" prefHeight="400.0" style="-fx-background-color: rgba(0,0,0,0.7);">
+    <children>
+        <VBox alignment="CENTER" spacing="20" layoutX="150" layoutY="100"
+              prefWidth="300" style="-fx-background-color: #333; -fx-padding: 20; -fx-border-color: white;">
+            <Label fx:id="labelTitulo" text="REPARAR MOTOR" style="-fx-text-fill: white; -fx-font-size: 20;"/>
+            <ProgressBar fx:id="progressMotor" prefWidth="200" progress="0.0" />
+            <Button fx:id="btnMash" text="GOLPEAR" prefWidth="100" prefHeight="100"
+                    style="-fx-background-radius: 50; -fx-base: red;"/>
+            <Button fx:id="btnCerrar" text="X" onAction="#handleCerrar" />
+        </VBox>
+    </children>
+</fx:root>

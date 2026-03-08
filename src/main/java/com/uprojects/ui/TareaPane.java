@@ -6,14 +6,14 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 
-public class TareaPane extends Pane {
+public abstract class TareaPane extends Pane {
 
     protected Tarea tarea;
-    protected Runnable tareaCompletada;
-    protected Runnable cerrarTarea;
+    protected Runnable onTareaCompletada;
+    protected Runnable onCerrarTarea;
 
     @FXML
-    protected Label lableTitulo;
+    protected Label labelTitulo;
     @FXML
     protected Button btnCerrar;
 
@@ -23,5 +23,53 @@ public class TareaPane extends Pane {
         this.setMouseTransparent(false);
     }
 
+    public void setTarea(Tarea nuevaTarea) {
+        // Despues agregamos una excepcion
+        if (nuevaTarea == null) {
+            System.out.println("[ADVERTENCIA] Tarea nueva no valida");
+            return;
+        }
 
+        this.tarea = nuevaTarea;
+
+        if (labelTitulo != null) {
+            labelTitulo.setText(tarea.getNombre());
+        }
+
+
+    }
+
+    public void setOnTareaCompletada(Runnable cb) {
+
+        this.onTareaCompletada = cb;
+    }
+
+    public void setOnCerrarTarea(Runnable cb) {
+        this.onCerrarTarea = cb;
+    }
+
+    public void mostrarTarea() {
+        this.setVisible(true);
+        this.setDisable(false);
+
+        if (tarea != null) {
+            tarea.comenzarTarea();
+        }
+    }
+
+    public void ocultarTarea() {
+        if (tarea != null && !tarea.fueCompletada()) {
+            tarea.cerrarTarea();
+        }
+
+        this.setVisible(false);
+        this.setDisable(true);
+        uiCerrarTarea();
+    }
+
+    protected abstract void uiAbrirTarea();
+
+    protected abstract void uiCerrarTarea();
+
+    public abstract void actualizarUI();
 }

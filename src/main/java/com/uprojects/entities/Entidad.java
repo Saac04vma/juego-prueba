@@ -11,9 +11,12 @@ public abstract class Entidad {
 
 
     //Estado de la entidad
-    protected String ID, nombre;
+    protected String nombre;
+    protected int ID;
     protected boolean paused, killed;
     protected boolean colision;
+    protected int tareasTotales = 4;
+    protected int tareasCompletadas = 0;
 
     // Posicion
     protected int worldX, worldY;
@@ -113,4 +116,43 @@ public abstract class Entidad {
         return this.areaSolida;
     }
 
+    public String getFacingTowards() {
+        return this.facingTowards;
+    }
+
+    public void setFacingTowards(String facingTowards) {
+        this.facingTowards = facingTowards;
+    }
+
+    public void setAccion(String accion) {
+        this.accion = accion;
+    }
+
+    public String getNombre() {
+        return this.nombre;
+    }
+
+    public void aumentarTareasCompletadas() {
+        this.tareasCompletadas++;
+    }
+
+    public int getTareasCompletadas() {
+        return this.tareasCompletadas;
+    }
+
+    public int getTareasTotales() {
+        return this.tareasTotales;
+    }
+
+    public boolean isKilled() {
+        return this.killed;
+    }
+
+    public void setId(int id) {
+        this.ID = id;
+    }
+
+    public int getID() {
+        return this.ID;
+    }
 }

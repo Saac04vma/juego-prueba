@@ -27,21 +27,20 @@ import javax.xml.bind.JAXBException;
 public class MapHandler {
 
     private Map map;
-    private Player player;
+    //private Player player;
     private HashMap<Tile, Image> tileImages;
 
 
-    public MapHandler(Player player1) {
+    public MapHandler() {
 
-        this.loadMapFile();
-        this.player = player1;
+        //this.loadMapFile();
+        //this.player = player1;
         this.tileImages = new HashMap<>();
-        this.buffToFxImage();
 
     }
 
 
-    public void loadMapFile() {
+    public void loadMapFile(String mapName) {
 
         String cwd = System.getProperty("user.dir");
 
@@ -49,11 +48,12 @@ public class MapHandler {
 
 
             TMXMapReader mapReader = new TMXMapReader();
+            this.tileImages.clear();
 
 
-            this.map = mapReader.readMap("src/main/resources/maps/mapa.tmx");
-
-            //this.map = mapReader.readMap("src/main/resources/maps/test3.tmx");
+            this.map = mapReader.readMap("src/main/resources/maps/" + mapName);
+            this.buffToFxImage();
+            //this.map = mapReader.readMap("src/main/resources/maps/lobby.tmx");
 
             if (this.map == null) {
                 System.out.println("MAP NOT LOADED");
@@ -87,13 +87,9 @@ public class MapHandler {
             int tileW = map.getTileWidth();
             int tileH = map.getTileHeight();
 
-            String dir = new File("src/main/resources/maps/mapa.tmx").getParent();
             int tsIndex = 0;
             for (TileSet ts : this.map.getTileSets()) {
 
-
-                //InputStream imgSource = ts.getImageData().getSource().getClass().getResourceAsStream("/maps/");
-                //InputStream imgSource = getClass().getResourceAsStream("/maps/tilesets/tileset.png");
 
                 System.out.println("Processing TileSet: " + ts.getName());
 
@@ -104,21 +100,6 @@ public class MapHandler {
                     imagePath = "/maps/tilesets/" + ts.getName() + ".png";
                 }
 
-                /*
-                // Fallback: manually parse TMX
-                if (imagePath == null || imagePath.isEmpty()) {
-                    System.out.println("  getTilebmpFile() returned null, parsing TMX manually...");
-                    imagePath = extractTilesetImagePath(dir, tsIndex);
-                }
-
-                if (imagePath == null || imagePath.isEmpty()) {
-                    System.out.println("  [SKIP] TileSet sin imagen: " + ts.getName());
-                    tsIndex++;
-                    continue;
-                }
-
-                System.out.println("  Image path: " + imagePath);
-*/
 
                 InputStream imgSrc = getClass().getResourceAsStream(imagePath);
 
@@ -177,7 +158,7 @@ public class MapHandler {
     }
 
 
-    public void draw(GraphicsContext gc, int zoom) {
+    public void draw(GraphicsContext gc, int zoom, Player player) {
 
         try {
 
@@ -196,7 +177,7 @@ public class MapHandler {
             int colInicial = Math.max(0, (player.getWorldX() - xVisible) / tileWidth);
             int colFinal = Math.min(map.getWidth(), (player.getWorldX() + xVisible) / tileWidth) + 2;
             int filaInicial = Math.max(0, (player.getWorldY() - yVisible) / tileHeight);
-            int filaFinal = Math.min(map.getHeight(), (player.getWorldX() + yVisible) / tileHeight) + 2;
+            int filaFinal = Math.min(map.getHeight(), (player.getWorldY() + yVisible) / tileHeight) + 2;
 
 
             for (MapLayer layer : this.map.getLayers()) {
@@ -283,13 +264,6 @@ public class MapHandler {
         return null;
     }
 
-    public String getTipoTarea(int columna, int fila) {
-        if (columna < 0 || columna >= map.getWidth() || fila < 0 || fila >= map.getHeight()) {
-            return null;
-        }
-
-        return "";
-    }
 
     public List<Tarea> calcularPosicionTareas() {
 
@@ -409,24 +383,13 @@ public class MapHandler {
         return map.getTileWidth(); // Altura y anchura son iguales 32x32
     }
 
-    private String extractTilesetImagePath(String tmxPath, int tilesetIndex) {
-        try {
-            javax.xml.parsers.DocumentBuilderFactory factory = javax.xml.parsers.DocumentBuilderFactory.newInstance();
-            javax.xml.parsers.DocumentBuilder builder = factory.newDocumentBuilder();
-            org.w3c.dom.Document doc = builder.parse(new java.io.FileInputStream(tmxPath));
-
-            org.w3c.dom.NodeList tilesets = doc.getElementsByTagName("tileset");
-            if (tilesetIndex < tilesets.getLength()) {
-                org.w3c.dom.Element tileset = (org.w3c.dom.Element) tilesets.item(tilesetIndex);
-                org.w3c.dom.NodeList images = tileset.getElementsByTagName("image");
-                if (images.getLength() > 0) {
-                    return images.item(0).getAttributes()
-                            .getNamedItem("source").getNodeValue();
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("  [ERROR] Failed to parse TMX for image path: " + e.getMessage());
-        }
-        return null;
+    public int getMapWidth() {
+        return this.map.getWidth();
     }
+
+    public int getMapHeight() {
+        return this.map.getHeight();
+    }
+
+
 }

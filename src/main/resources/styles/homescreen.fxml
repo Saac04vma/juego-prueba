@@ -25,22 +25,22 @@
    <left>
       <VBox alignment="CENTER" nodeOrientation="LEFT_TO_RIGHT" prefHeight="613.0" prefWidth="180.0" BorderPane.alignment="CENTER">
          <children>
-            <Button fx:id="button1" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" onAction="#startGame" prefWidth="500.0" text="Crear Partida" textAlignment="CENTER">
+            <Button fx:id="button1" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" onAction="#startLobby" prefWidth="500.0" text="Crear Partida" textAlignment="CENTER">
                <VBox.margin>
                   <Insets bottom="48.0" />
                </VBox.margin>
             </Button>
-            <Button alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" prefWidth="500.0" text="Unirse a partida" textAlignment="CENTER" VBox.vgrow="ALWAYS">
+            <Button alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" onAction="#joinLobby" prefWidth="500.0" text="Unirse a partida" textAlignment="CENTER" VBox.vgrow="ALWAYS">
                <VBox.margin>
                   <Insets bottom="48.0" />
                </VBox.margin>
             </Button>
-            <Button alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" prefWidth="500.0" text="Ajustes" textAlignment="CENTER">
+            <Button alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" onAction="#irAjustes" prefWidth="500.0" text="Ajustes" textAlignment="CENTER">
                <VBox.margin>
                   <Insets bottom="48.0" />
                </VBox.margin>
             </Button>
-            <Button alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" prefWidth="500.0" text="Salir" textAlignment="CENTER">
+            <Button alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" onAction="#salirDelJuego" prefWidth="500.0" text="Salir" textAlignment="CENTER">
                <VBox.margin>
                   <Insets bottom="48.0" />
                </VBox.margin>

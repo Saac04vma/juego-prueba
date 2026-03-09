@@ -3,168 +3,168 @@
  <editorsettings>
   <export target="../IdeaProjects/AmongU/src/main/resources/maps/test2.tmx" format="tmx"/>
  </editorsettings>
- <tileset firstgid="1" name="test-tileset" tilewidth="64" tileheight="64" tilecount="54" columns="9">
+ <tileset firstgid="1" name="tileset" tilewidth="64" tileheight="64" tilecount="54" columns="9">
   <image source="tilesets/tileset.png" width="576" height="384"/>
   <tile id="3">
    <properties>
-    <property name="solido" type="bool" value="true"/>
+    <property name="Solido" type="bool" value="true"/>
    </properties>
   </tile>
   <tile id="4">
    <properties>
-    <property name="solido" type="bool" value="true"/>
+    <property name="Solido" type="bool" value="true"/>
    </properties>
   </tile>
   <tile id="5">
    <properties>
-    <property name="solido" type="bool" value="true"/>
+    <property name="Solido" type="bool" value="true"/>
    </properties>
   </tile>
   <tile id="12">
    <properties>
-    <property name="solido" type="bool" value="true"/>
+    <property name="Solido" type="bool" value="true"/>
    </properties>
   </tile>
   <tile id="14">
    <properties>
-    <property name="solido" type="bool" value="true"/>
+    <property name="Solido" type="bool" value="true"/>
    </properties>
   </tile>
   <tile id="21">
    <properties>
-    <property name="solido" type="bool" value="true"/>
+    <property name="Solido" type="bool" value="true"/>
    </properties>
   </tile>
   <tile id="22">
    <properties>
-    <property name="solido" type="bool" value="true"/>
+    <property name="Solido" type="bool" value="true"/>
    </properties>
   </tile>
   <tile id="23">
    <properties>
-    <property name="solido" type="bool" value="true"/>
+    <property name="Solido" type="bool" value="true"/>
    </properties>
   </tile>
   <tile id="27">
    <properties>
-    <property name="solido" type="bool" value="true"/>
+    <property name="Solido" type="bool" value="true"/>
    </properties>
   </tile>
   <tile id="28">
    <properties>
-    <property name="solido" type="bool" value="true"/>
+    <property name="Solido" type="bool" value="true"/>
    </properties>
   </tile>
   <tile id="29">
    <properties>
-    <property name="solido" type="bool" value="true"/>
+    <property name="Solido" type="bool" value="true"/>
    </properties>
   </tile>
   <tile id="30">
    <properties>
-    <property name="solido" type="bool" value="true"/>
+    <property name="Solido" type="bool" value="true"/>
    </properties>
   </tile>
   <tile id="31">
    <properties>
-    <property name="solido" type="bool" value="true"/>
+    <property name="Solido" type="bool" value="true"/>
    </properties>
   </tile>
   <tile id="32">
    <properties>
-    <property name="solido" type="bool" value="true"/>
+    <property name="Solido" type="bool" value="true"/>
    </properties>
   </tile>
   <tile id="33">
    <properties>
-    <property name="solido" type="bool" value="true"/>
+    <property name="Solido" type="bool" value="true"/>
    </properties>
   </tile>
   <tile id="34">
    <properties>
-    <property name="solido" type="bool" value="true"/>
+    <property name="Solido" type="bool" value="true"/>
    </properties>
   </tile>
   <tile id="35">
    <properties>
-    <property name="solido" type="bool" value="true"/>
+    <property name="Solido" type="bool" value="true"/>
     <property name="tarea" value="conectar-cables"/>
    </properties>
   </tile>
   <tile id="39">
    <properties>
-    <property name="solido" type="bool" value="true"/>
+    <property name="Solido" type="bool" value="true"/>
    </properties>
   </tile>
   <tile id="40">
    <properties>
-    <property name="solido" type="bool" value="true"/>
+    <property name="Solido" type="bool" value="true"/>
    </properties>
   </tile>
   <tile id="41">
    <properties>
-    <property name="solido" type="bool" value="true"/>
+    <property name="Solido" type="bool" value="true"/>
    </properties>
   </tile>
   <tile id="42">
    <properties>
-    <property name="solido" type="bool" value="true"/>
+    <property name="Solido" type="bool" value="true"/>
    </properties>
   </tile>
   <tile id="43">
    <properties>
-    <property name="solido" type="bool" value="true"/>
+    <property name="Solido" type="bool" value="true"/>
    </properties>
   </tile>
   <tile id="44">
    <properties>
-    <property name="solido" type="bool" value="true"/>
+    <property name="Solido" type="bool" value="true"/>
     <property name="tarea" value="conectar-cables"/>
    </properties>
   </tile>
   <tile id="45">
    <properties>
-    <property name="solido" type="bool" value="true"/>
+    <property name="Solido" type="bool" value="true"/>
    </properties>
   </tile>
   <tile id="46">
    <properties>
-    <property name="solido" type="bool" value="true"/>
+    <property name="Solido" type="bool" value="true"/>
    </properties>
   </tile>
   <tile id="47">
    <properties>
-    <property name="solido" type="bool" value="true"/>
+    <property name="Solido" type="bool" value="true"/>
    </properties>
   </tile>
   <tile id="48">
    <properties>
-    <property name="solido" type="bool" value="true"/>
+    <property name="Solido" type="bool" value="true"/>
    </properties>
   </tile>
   <tile id="49">
    <properties>
-    <property name="solido" type="bool" value="true"/>
+    <property name="Solido" type="bool" value="true"/>
    </properties>
   </tile>
   <tile id="50">
    <properties>
-    <property name="solido" type="bool" value="true"/>
+    <property name="Solido" type="bool" value="true"/>
    </properties>
   </tile>
   <tile id="51">
    <properties>
-    <property name="solido" type="bool" value="true"/>
+    <property name="Solido" type="bool" value="true"/>
    </properties>
   </tile>
   <tile id="52">
    <properties>
-    <property name="solido" type="bool" value="true"/>
+    <property name="Solido" type="bool" value="true"/>
    </properties>
   </tile>
   <tile id="53">
    <properties>
-    <property name="solido" type="bool" value="true"/>
+    <property name="Solido" type="bool" value="true"/>
     <property name="tarea" value="conectar-cables"/>
    </properties>
   </tile>

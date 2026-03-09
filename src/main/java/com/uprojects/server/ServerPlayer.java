@@ -4,15 +4,27 @@ public class ServerPlayer {
 
     public int id;
     public String nombre;
-    public float x, y;
+    public String color;
+    public double x, y;
     public int tareasCompletadas = 0;
     public int tareasTotales = 4; // Maximo de tareas del jugador
     public boolean killed;
+    public String accion, facingTowards;
+    public int spriteCounter = 0;
+    public int spriteNumber = 1;
 
-    public ServerPlayer(int id, String nombre) {
+    public ServerPlayer(int id, String nombre, String color) {
         this.id = id;
         this.nombre = nombre;
         this.killed = false;
+        this.color = color;
+        this.accion = "up";
+        this.facingTowards = "left";
+    }
+
+    public void setTargets(double worldX, double worldY) {
+        this.x = worldX;
+        this.y = worldY;
     }
 
 }

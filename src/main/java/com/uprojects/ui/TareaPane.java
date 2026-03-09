@@ -24,7 +24,6 @@ public abstract class TareaPane extends Pane {
     }
 
     public void setTarea(Tarea nuevaTarea) {
-        // Despues agregamos una excepcion
         if (nuevaTarea == null) {
             System.out.println("[ADVERTENCIA] Tarea nueva no valida");
             return;
@@ -35,12 +34,9 @@ public abstract class TareaPane extends Pane {
         if (labelTitulo != null) {
             labelTitulo.setText(tarea.getNombre());
         }
-
-
     }
 
     public void setOnTareaCompletada(Runnable cb) {
-
         this.onTareaCompletada = cb;
     }
 
@@ -55,16 +51,27 @@ public abstract class TareaPane extends Pane {
         if (tarea != null) {
             tarea.comenzarTarea();
         }
+
+        uiAbrirTarea();
     }
 
     public void ocultarTarea() {
+        if (!this.isVisible()) {
+            return;
+        }
+
         if (tarea != null && !tarea.fueCompletada()) {
             tarea.cerrarTarea();
         }
 
         this.setVisible(false);
         this.setDisable(true);
+
         uiCerrarTarea();
+
+        if (onCerrarTarea != null) {
+            onCerrarTarea.run();
+        }
     }
 
     protected abstract void uiAbrirTarea();

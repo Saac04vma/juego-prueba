@@ -3,11 +3,14 @@ package com.uprojects.server;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
+import com.uprojects.entities.RemotePlayer;
 
 import java.io.IOException;
+import java.rmi.Remote;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class GameServer {
+public class GameServer extends Listener {
 
     private Server server;
     private final int MAX_JUGADORES = 10;
@@ -16,6 +19,7 @@ public class GameServer {
 
 
     private HashMap<Integer, ServerPlayer> jugadores = new HashMap<>();
+    private final ConcurrentHashMap<Integer, Red.PaqueteActualizarJugador> playersInfo = new ConcurrentHashMap<>();
     private boolean juegoIniciado = false;
 
     public GameServer() throws IOException {
@@ -24,69 +28,148 @@ public class GameServer {
         // Registramos las clases que se transmitiran por la red
         Red.registrar(server.getKryo());
 
-        server.start();
+        // Anclamos a los puertos TCP y UDP
         server.bind(TCP_PORT, UDP_PORT);
+
+
+        server.start();
 
 
         System.out.println("Servidor iniciado. Esperando jugadores...");
 
-        server.addListener(new Listener() {
-            @Override
-            public void connected(Connection conexion) {
-                if (jugadores.size() >= MAX_JUGADORES || juegoIniciado) {
-                    conexion.close(); // Rechaza si está lleno o ya empezó
+        server.addListener(this);
+    }
+
+    // Se ejecuta cuando se recibe una conexion (un jugador se conecta al servidor)
+    @Override
+    public void connected(Connection conexion) {
+
+        System.out.println("Conexion recibida de " + conexion.getID());
+
+        if (jugadores.size() >= MAX_JUGADORES || juegoIniciado) {
+            System.out.println("Servidor lleno. Rechazando a " + conexion.getRemoteAddressTCP());
+            conexion.close(); // Rechaza si está lleno o ya empezó
+        }
+
+        ServerPlayer nuevoJugador = new ServerPlayer(conexion.getID(), "Jugador_" + conexion.getID(), "Amarillo");
+        jugadores.put(conexion.getID(), nuevoJugador);
+
+        System.out.println("Agregado jugador " + nuevoJugador.nombre);
+
+
+        // Le enviamos la posicion de todos los jugadores al jugador nuevo
+        for (ServerPlayer player : jugadores.values()) {
+            Red.PaqueteConexion pc = new Red.PaqueteConexion();
+            pc.idJugador = player.id;
+            pc.nombreJugador = player.nombre;
+            pc.colorJugador = player.color;
+            conexion.sendTCP(pc); // Solo al que se acaba de conectar recibe esto
+        }
+
+        // Ahora si avisamos a los demas
+        Red.PaqueteConexion avisoNuevo = new Red.PaqueteConexion();
+        avisoNuevo.idJugador = nuevoJugador.id;
+        avisoNuevo.nombreJugador = nuevoJugador.nombre;
+        avisoNuevo.colorJugador = nuevoJugador.color;
+
+        // Lo enviamos a todos MENOS al que acaba de entrar
+        server.sendToAllExceptTCP(conexion.getID(), avisoNuevo);
+
+        broadcastLobbyStatus();
+    }
+
+
+    // Se ejecuta cuando algun cliente (jugador) se desconecta
+    @Override
+    public void disconnected(Connection conexion) {
+
+        System.out.println("Jugador desconectado. Total: " + jugadores.size());
+
+        jugadores.remove(conexion.getID());
+        playersInfo.remove(conexion.getID());
+
+        Red.PaqueteRemoverJugador removerJugador = new Red.PaqueteRemoverJugador();
+        removerJugador.idJugador = conexion.getID();
+
+        server.sendToAllTCP(removerJugador);
+
+        // Si alguien se va, verificamos si los que quedan ya terminaron
+        if (juegoIniciado) verificarFinDeJuego();
+    }
+
+    // Se ejecuta cuando recibimos un paquete a traves del socket
+    @Override
+    public void received(Connection conexion, Object paquete) {
+
+        if (paquete instanceof Red.PaquetePedirInicio) {
+            if (conexion.getID() == 1 && jugadores.size() >= 5) {
+                juegoIniciado = true;
+
+                Red.PaqueteIniciarJuego inicio = new Red.PaqueteIniciarJuego();
+                inicio.inicioX = 30 * 32;
+                inicio.inicioY = 15 * 32;
+                inicio.mapa = ((Red.PaquetePedirInicio) paquete).mapa;
+
+                server.sendToAllTCP(inicio);
+            }
+        }
+
+        // 1. Un jugador entra a la sala
+        if (paquete instanceof Red.PaqueteConexion pc) {
+            pc.idJugador = conexion.getID();
+            ServerPlayer nuevoJugador = new ServerPlayer(pc.idJugador, pc.nombreJugador, pc.colorJugador);
+            jugadores.put(pc.idJugador, nuevoJugador);
+            System.out.println(pc.nombreJugador + " se ha unido.");
+
+            server.sendToAllExceptTCP(conexion.getID(), pc);
+
+            for (ServerPlayer serverPlayer : jugadores.values()) {
+                if (serverPlayer.id != pc.idJugador) {
+                    Red.PaqueteConexion infoExistente = new Red.PaqueteConexion();
+                    infoExistente.idJugador = serverPlayer.id;
+                    infoExistente.nombreJugador = serverPlayer.nombre;
+                    infoExistente.colorJugador = "Amarillo"; // Despues veo el color
+
+                    conexion.sendTCP(infoExistente);
                 }
             }
 
-            @Override
-            public void disconnected(Connection conexion) {
-                jugadores.remove(conexion.getID());
-                System.out.println("Jugador desconectado. Total: " + jugadores.size());
-                // Si alguien se va, verificamos si los que quedan ya terminaron
-                if (juegoIniciado) verificarFinDeJuego();
+            broadcastLobbyStatus();
+
+        }
+
+        // 2. Un jugador se mueve (UDP)
+        if (paquete instanceof Red.PaqueteActualizarJugador jugador) {
+
+            // Establecemos el ID del jugador en base al ID de la conexion. Esto nos facilita garantizar la unicidad del ID
+            jugador.idJugador = conexion.getID();
+            playersInfo.put(jugador.idJugador, jugador);
+
+            server.sendToAllExceptUDP(conexion.getID(), jugador);
+        }
+
+        // 3. Un jugador completa una tarea (TCP)
+        if (paquete instanceof Red.PaqueteTareaCompletada) {
+            ServerPlayer jugador = jugadores.get(conexion.getID());
+            if (jugador != null) {
+                jugador.tareasCompletadas++;
+                System.out.println(jugador.nombre + " completó una tarea (" + jugador.tareasCompletadas + "/" + jugador.tareasTotales + ")");
+                verificarFinDeJuego();
             }
+        }
 
-            @Override
-            public void received(Connection conexion, Object paquete) {
+        if (paquete instanceof Red.PaqueteSalirLobby) {
+            System.out.println("Jugador " + conexion.getID() + " salió del lobby");
+            jugadores.remove(conexion.getID()); //
 
-                // 1. Un jugador entra a la sala
-                if (paquete instanceof Red.PaqueteConexion) {
-                    Red.PaqueteConexion pc = (Red.PaqueteConexion) paquete;
-                    ServerPlayer nuevoJugador = new ServerPlayer(conexion.getID(), pc.nombreJugador);
-                    jugadores.put(conexion.getID(), nuevoJugador);
-                    System.out.println(pc.nombreJugador + " se ha unido.");
+            // Enviamos la señal para que los demas jugadores dejen de renderizarlo
+            Red.PaqueteRemoverJugador remove = new Red.PaqueteRemoverJugador();
+            remove.idJugador = conexion.getID();
+            server.sendToAllExceptTCP(conexion.getID(), remove);
 
-                    if (jugadores.size() == MAX_JUGADORES) {
-                        iniciarJuego();
-                    }
-                }
-
-                // 2. Un jugador se mueve (UDP)
-                if (paquete instanceof Red.PaqueteMovimiento) {
-                    Red.PaqueteMovimiento mov = (Red.PaqueteMovimiento) paquete;
-                    ServerPlayer jug = jugadores.get(conexion.getID());
-                    if (jug != null) {
-                        jug.x = mov.x;
-                        jug.y = mov.y;
-
-                        // Reenviamos el movimiento a TODOS los demás por UDP (rápido)
-                        mov.idJugador = conexion.getID();
-                        server.sendToAllExceptUDP(conexion.getID(), mov);
-                    }
-                }
-
-                // 3. Un jugador completa una tarea (TCP)
-                if (paquete instanceof Red.PaqueteTareaCompletada) {
-                    ServerPlayer jugador = jugadores.get(conexion.getID());
-                    if (jugador != null) {
-                        jugador.tareasCompletadas++;
-                        System.out.println(jugador.nombre + " completó una tarea (" + jugador.tareasCompletadas + "/" + jugador.tareasTotales + ")");
-                        verificarFinDeJuego();
-                    }
-                }
-            }
-        });
-
+            conexion.close();
+            broadcastLobbyStatus();
+        }
     }
 
     private void iniciarJuego() {
@@ -138,5 +221,14 @@ public class GameServer {
         }
     }
 
+    private void broadcastLobbyStatus() {
+        Red.PaqueteLobbyInfo status = new Red.PaqueteLobbyInfo();
+        status.conectados = jugadores.size();
+        status.puedeEmpezar = jugadores.size() >= 2;
+        status.mapaActual = "lobby.tmx";
+        server.sendToAllTCP(status);
+    }
 
 }
+
+

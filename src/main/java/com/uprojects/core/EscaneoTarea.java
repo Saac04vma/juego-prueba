@@ -14,9 +14,13 @@ public class EscaneoTarea extends Tarea {
     public TareaPane crearUI() {
         return new EscaneoPane();
     }
-    
+
     @Override
     public void actualizarTarea(double delta) {
         // En este caso no necesitamos lógica aquí porque el UI maneja el tiempo
+        if (delta >= 1.0) {
+            super.actualizarTarea(delta);
+        }
+
     }
 }

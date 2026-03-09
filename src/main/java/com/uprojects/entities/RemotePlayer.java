@@ -15,6 +15,7 @@ public class RemotePlayer extends Entidad {
         this.targetX = netX;
         this.targetY = netY;
         this.accion = netAcc;
+        this.facingTowards = "right";
     }
 
     @Override
@@ -38,4 +39,11 @@ public class RemotePlayer extends Entidad {
         // Bonus: Draw name tag since we have the 'nombre' property
         gc.fillText(nombre, screenX, screenY - 10);
     }
+
+    public void setTargets(double x, double y) {
+        this.targetX = x;
+        this.targetY = y;
+    }
+
+
 }

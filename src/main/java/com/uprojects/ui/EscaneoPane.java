@@ -16,9 +16,11 @@ import java.util.ResourceBundle;
 
 public class EscaneoPane extends TareaPane implements Initializable {
 
-    @FXML private ProgressBar progressEscaner;
-    @FXML private Label lblDatosEscaneo;
-    
+    @FXML
+    private ProgressBar progressEscaner;
+    @FXML
+    private Label lblDatosEscaneo;
+
     private Timeline timeline;
     private double progresoActual = 0.0;
 
@@ -35,14 +37,12 @@ public class EscaneoPane extends TareaPane implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        btnCerrar.setOnAction(e -> uiCerrarTarea());
-        
-        // Configuramos la animación de 5 segundos (actualiza cada 100ms)
+        btnCerrar.setOnAction(e -> ocultarTarea());
+
         timeline = new Timeline(new KeyFrame(Duration.millis(100), e -> {
-            progresoActual += 0.02; // 2% cada 100ms = 5 segundos total
+            progresoActual += 0.02;
             progressEscaner.setProgress(progresoActual);
-            
-            // Simular datos cambiando
+
             if (progresoActual < 0.3) lblDatosEscaneo.setText("Analizando ID...");
             else if (progresoActual < 0.6) lblDatosEscaneo.setText("Comprobando tipo de sangre...");
             else if (progresoActual < 0.9) lblDatosEscaneo.setText("Verificando peso...");
@@ -55,41 +55,34 @@ public class EscaneoPane extends TareaPane implements Initializable {
         }));
         timeline.setCycleCount(Timeline.INDEFINITE);
     }
+
     @Override
     public void actualizarUI() {
-        // Tu TareaPane exige este método, pero lo dejamos vacío 
-        // porque nuestro Timeline ya se encarga de animar la barra.
     }
 
     @Override
     public void uiAbrirTarea() {
-        // Quitamos el super.uiAbrirTarea();
         progresoActual = 0.0;
         progressEscaner.setProgress(0);
         lblDatosEscaneo.setText("Iniciando escáner...");
-        timeline.play(); // Iniciar escaneo al abrir
+        timeline.play();
     }
 
     @Override
     public void uiCerrarTarea() {
-        // Quitamos el super.uiCerrarTarea();
-        if (timeline != null) timeline.stop(); // Pausar si el jugador se va
-        ocultarTarea(); // Usamos el método de tu clase base para esconder el panel
+        if (timeline != null) timeline.stop();
     }
 
     private void completarEscaneo() {
         if (tarea != null) {
-            tarea.actualizarTarea(1.0); // Marca progreso al máximo
-            // El atributo "completada" está en la clase Tarea
-            
+            tarea.actualizarTarea(1.0);
+
             if (tarea.fueCompletada()) {
                 if (onTareaCompletada != null) {
                     onTareaCompletada.run();
                 }
-                System.out.println("Escaneo finalizado!");
-                
-                // Darle un segundo al jugador para ver el 100% antes de cerrar
-                Timeline delayCierre = new Timeline(new KeyFrame(Duration.seconds(1), ev -> uiCerrarTarea()));
+
+                Timeline delayCierre = new Timeline(new KeyFrame(Duration.seconds(1), ev -> ocultarTarea()));
                 delayCierre.play();
             }
         }

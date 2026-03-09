@@ -202,6 +202,14 @@ public class Player extends Entidad {
         return this.spd;
     }
 
+    public int getCameraX() {
+        return this.cameraX;
+    }
+
+    public int getCameraY() {
+        return this.cameraY;
+    }
+
     public void setColision(boolean colisiono) {
         this.colision = colisiono;
     }
@@ -209,4 +217,15 @@ public class Player extends Entidad {
     public boolean getColision() {
         return this.colision;
     }
+
+    public void setKilled(boolean electrocutado) {
+        this.killed = electrocutado;
+    }
+
+    public void setWorldPosition(int x, int y) {
+        this.worldX = x;
+        this.worldY = y;
+    }
+
+
 }

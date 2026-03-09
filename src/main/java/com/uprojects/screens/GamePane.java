@@ -1,27 +1,44 @@
 package com.uprojects.screens;
 
+import com.esotericsoftware.kryonet.Client;
+import com.esotericsoftware.kryonet.Connection;
+import com.esotericsoftware.kryonet.Listener;
 import com.uprojects.core.ArreglarCablesTarea;
 import com.uprojects.core.Tarea;
+import com.uprojects.entities.RemotePlayer;
 import com.uprojects.helpers.CollisionChecker;
 import com.uprojects.helpers.KeyHandler;
 import com.uprojects.entities.Player;
+import com.uprojects.server.Red;
 import com.uprojects.stages.MapHandler;
 import com.uprojects.ui.ArreglarCablesPane;
 import com.uprojects.ui.TareaPane;
 import javafx.animation.AnimationTimer;
+import javafx.application.Platform;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 public class GamePane extends Pane {
+
+
+    // Configuracion de cliente para servidor
+    private Client cliente;
+    private HashMap<Integer, RemotePlayer> jugadoresRemotos;
 
     // Config Pantalla
     private final int originalTileSize = 32; // Eje: 16x16 tiles
@@ -52,18 +69,28 @@ public class GamePane extends Pane {
     private final Pane tareaOverlay;
 
     // Player creation
-    private HashMap<String, Player> players;
     private Player localPlayer;
+    private final int localID;
 
     // Map handler (more like map manager but u get it)
     private MapHandler mapHandler;
+    private String mapaActual;
 
     // Colision Checker
     private CollisionChecker collisionChecker;
 
-    public GamePane(Scene scene) {
+    // Lobby
+    private VBox lobbyUI;
+    private Button btnSalir;
+    private Button btnEmpezar;
+    private Label lblContador;
+    private Label lblLocalIP;
+
+    public GamePane(Scene scene, Client cliente, int localID, boolean isHost) {
 
         this.canvas = new Canvas();
+        this.localID = localID;
+        this.cliente = cliente;
 
         Group group = new Group(canvas);
 
@@ -106,13 +133,51 @@ public class GamePane extends Pane {
 
 
         // Inicializando lista de jugadores
-        this.players = new HashMap<>();
+        this.jugadoresRemotos = new HashMap<>();
         this.tareaActual = null;
         this.tareasPorHacer = new ArrayList<>();
         //this.taresPorHacer.add(new ArreglarCablesTarea());
 
+        // 2. Create the Overlay UI
+        lobbyUI = new VBox(10);
+        lobbyUI.setStyle("-fx-background-color: rgba(0,0,0,0.5); -fx-padding: 20;");
+        lobbyUI.setTranslateX(20);
+        lobbyUI.setTranslateY(20);
 
-        this.getChildren().addAll(group, tareaOverlay);
+        lblContador = new Label("Esperando jugadores (0/10)");
+        lblContador.setTextFill(Color.WHITE);
+
+
+        try {
+            String hostIP = isHost ? InetAddress.getLocalHost().getHostAddress() : "";
+
+
+            lblLocalIP = new Label("Server IP: " + hostIP);
+            lblLocalIP.setTextFill(Color.WHITE);
+        } catch (UnknownHostException ex) {
+
+            System.out.println("Advertencia: No se pudo obtener la IP local");
+        }
+
+
+        btnSalir = new Button("Salir del Lobby");
+        btnSalir.setOnAction(e -> {
+            cliente.sendTCP(new Red.PaqueteSalirLobby());
+            irAMenuPrincipal(); // Logic to close the game window
+        });
+
+        lobbyUI.getChildren().addAll(lblLocalIP, lblContador, btnSalir);
+
+        // 3. Add Start button only for Host
+        if (isHost) {
+            btnEmpezar = new Button("INICIAR PARTIDA");
+            btnEmpezar.setDisable(true); // Disabled until 5 players
+            btnEmpezar.setOnAction(e -> cliente.sendTCP(new Red.PaquetePedirInicio()));
+            lobbyUI.getChildren().add(btnEmpezar);
+        }
+
+
+        this.getChildren().addAll(group, tareaOverlay, lobbyUI);
 
         // Nos aseguramos de que sea visible el pane antes de iniciar el juego, de lo contrario el ancho y alto calculado seria de 0,0
         this.layoutBoundsProperty().addListener((obs, oldV, newV) -> {
@@ -134,8 +199,10 @@ public class GamePane extends Pane {
         }
 
         this.localPlayer = new Player(keyH, (int) canvas.getWidth(), (int) canvas.getHeight(), tileSize, "Alejandro", "Amarillo");
-        this.players.put("id1", localPlayer);
-        this.mapHandler = new MapHandler(players.get("id1"));
+        //this.jugadoresRemotos.put();
+        this.mapHandler = new MapHandler();
+        this.mapHandler.loadMapFile("lobby.tmx");
+        this.mapaActual = "lobby.tmx";
         this.collisionChecker = new CollisionChecker(mapHandler);
         this.tareasPorHacer = mapHandler.calcularPosicionTareas();
 
@@ -192,6 +259,13 @@ public class GamePane extends Pane {
 
 
         localPlayer.updatePosition(collisionChecker);
+        Red.PaqueteActualizarJugador posicionEnviar = new Red.PaqueteActualizarJugador();
+        posicionEnviar.idJugador = localID;
+        posicionEnviar.x = localPlayer.getWorldX();
+        posicionEnviar.y = localPlayer.getWorldY();
+        posicionEnviar.accion = localPlayer.getAccion();
+        posicionEnviar.facingTowards = localPlayer.getFacingTowards();
+        cliente.sendUDP(posicionEnviar);
 
         for (Tarea tarea : this.tareasPorHacer) {
             tarea.update(localPlayer);
@@ -204,6 +278,10 @@ public class GamePane extends Pane {
                 abrirTareaActual();
             }
         }
+        for (RemotePlayer jugadorExterno : jugadoresRemotos.values()) {
+            jugadorExterno.updatePosition(null);
+        }
+
     }
 
     public void renderPane() {
@@ -225,8 +303,13 @@ public class GamePane extends Pane {
         gc.translate(-localPlayer.getWorldX(), -localPlayer.getWorldY());
 
 
-        mapHandler.draw(this.gc, zoom);
+        mapHandler.draw(this.gc, zoom, localPlayer);
         localPlayer.draw(this.gc);
+
+        for (RemotePlayer jugadorExterno : jugadoresRemotos.values()) {
+            System.out.println("Dibujando a " + jugadorExterno.getNombre());
+            jugadorExterno.draw(gc, localPlayer);
+        }
 
         for (Tarea tarea : this.tareasPorHacer) {
             tarea.drawInteractionBox(gc);
@@ -245,6 +328,78 @@ public class GamePane extends Pane {
         gc.setFill(javafx.scene.paint.Color.WHITE);
         gc.fillText(fpsDisplay, 120, 120); // Draws at top-left
 
+    }
+
+    public void agregarJugadorRemoto(Red.PaqueteConexion datos) {
+        // Si el ID soy yo mismo, no me agrego a la lista de "remotos"
+        System.out.println("Creando jugador remoto");
+        if (datos.idJugador == this.localID) return;
+
+
+        System.out.println("Viendo si es duplicado");
+        // Evitar duplicados
+        if (jugadoresRemotos.containsKey(datos.idJugador)) return;
+
+
+        Platform.runLater(() -> {
+            System.out.println("Creando avatar para: " + datos.nombreJugador);
+
+            // Creamos la entidad visual
+            RemotePlayer nuevoRemoto = new RemotePlayer(
+                    this.tileSize,
+                    datos.nombreJugador,
+                    "Amarillo"
+            );
+
+            // Lo guardamos en el mapa para que el update() y draw() lo procesen
+            nuevoRemoto.setAccion("up");
+            nuevoRemoto.setFacingTowards("right");
+            jugadoresRemotos.put(datos.idJugador, nuevoRemoto);
+        });
+    }
+
+    public void conectarCliente(String ip) throws IOException {
+        cliente = new Client();
+        Red.registrar(cliente.getKryo());
+        cliente.start();
+        // 5 segundos de timeout
+        cliente.connect(5000, ip, Red.TCP_PORT, Red.UDP_PORT);
+
+        cliente.addListener(new Listener() {
+            @Override
+            public void received(Connection conexion, Object object) {
+                if (object instanceof Red.PaqueteActualizarJugador paquete) {
+                    if (paquete.idJugador == localID)
+                        return;
+
+                    Platform.runLater(() -> {
+                        RemotePlayer jugadorExterno = jugadoresRemotos.get(paquete.idJugador);
+
+                        // Si no existe localmente, creamos al nuevo jugador externo
+                        if (jugadorExterno == null) {
+                            jugadorExterno = new RemotePlayer(tileSize, paquete.nombre, paquete.color);
+                            jugadoresRemotos.put(paquete.idJugador, jugadorExterno);
+                        }
+
+                        // Actualizamos su posicion para que todos los demas jugadores puedan renderizarlo
+                        jugadorExterno.updateFromNetwork(paquete.x, paquete.y, paquete.accion);
+
+                    });
+                }
+
+                if (object instanceof Red.PaqueteIniciarJuego paquete) {
+                    mapHandler.loadMapFile(paquete.mapa);
+
+                    // Enviamos a todos los jugadores al mismo lugar
+                    localPlayer.setWorldPosition(paquete.inicioX, paquete.inicioY);
+
+                    for (RemotePlayer jugadorExt : jugadoresRemotos.values()) {
+                        jugadorExt.setTargets(paquete.inicioX, paquete.inicioY);
+                    }
+
+                }
+            }
+        });
     }
 
 
@@ -339,5 +494,61 @@ public class GamePane extends Pane {
 
     public int getTileSize() {
         return this.tileSize;
+    }
+
+    public void cambiarAMapaPrincipal(Red.PaqueteIniciarJuego datos) {
+        // 1. Hide Lobby Buttons
+        this.ocultarLobbyUI();
+
+        // 2. Tell MapHandler to load the new file
+        this.mapHandler.loadMapFile(datos.mapa);
+
+        // 3. Teleport local player to the cafeteria table
+        this.localPlayer.setWorldPosition(datos.inicioX, datos.inicioY);
+
+        // 4. Teleport all remote players to the same spot so they don't 'slide' across the map
+        for (RemotePlayer rp : jugadoresRemotos.values()) {
+            rp.setTargets(datos.inicioX, datos.inicioY);
+        }
+    }
+
+    public void actualizarLobby(Red.PaqueteLobbyInfo status) {
+        Platform.runLater(() -> {
+            lblContador.setText("Jugadores: " + status.conectados + "/10 (Min. 5)");
+            if (btnEmpezar != null) {
+                btnEmpezar.setDisable(!status.puedeEmpezar);
+            }
+
+            if (!this.mapaActual.equals(status.mapaActual)) {
+                this.mapHandler.loadMapFile(status.mapaActual);
+                this.mapaActual = status.mapaActual;
+            }
+        });
+    }
+
+    public void actualizarPosicionRemoto(Red.PaqueteActualizarJugador status) {
+
+        for (RemotePlayer remotePlayer : jugadoresRemotos.values()) {
+
+            if (status.idJugador == remotePlayer.getID()) {
+                // Actualizamos todas sus propiedades
+                remotePlayer.setTargets(status.x, status.y);
+                remotePlayer.setAccion(status.accion);
+                remotePlayer.setFacingTowards(status.facingTowards);
+
+            }
+        }
+    }
+
+    public void ocultarLobbyUI() {
+        Platform.runLater(() -> lobbyUI.setVisible(false));
+    }
+
+    private void irAMenuPrincipal() {
+
+    }
+
+    public Player getLocalPlayer() {
+        return this.localPlayer;
     }
 }

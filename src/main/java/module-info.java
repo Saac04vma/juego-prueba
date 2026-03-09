@@ -8,6 +8,7 @@ module com.uprojects.amongus {
     requires javafx.graphics;
     requires com.esotericsoftware.kryo;
     requires kryonet;
+    requires java.rmi;
 
     exports com.uprojects.screens;
     exports com.uprojects.stages;
@@ -15,6 +16,9 @@ module com.uprojects.amongus {
     exports com.uprojects.helpers;
     exports com.uprojects.core;
     exports com.uprojects.ui;
+    exports com.uprojects.server;
+
+
     opens com.uprojects.launcher to javafx.graphics;
     opens com.uprojects.screens to javafx.fxml;
     opens com.uprojects.ui to javafx.fxml;

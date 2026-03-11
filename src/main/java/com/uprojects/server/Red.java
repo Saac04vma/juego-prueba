@@ -47,6 +47,8 @@ public class Red {
     }
 
     public static class PaqueteSalirLobby {
+        public int idJugadorDesconectado;
+        public int jugadoresConectados;
     }
 
     public static class PaqueteIniciarJuego {
@@ -70,7 +72,9 @@ public class Red {
     }
 
     public static class PaqueteRemoverJugador {
-        public int idJugador;
+        public int idJugadorDesconectado;
+        public int totalJugadoresConectados;
+        public boolean puedeEmpezar;
     }
 
     public static class PaqueteTareaCompletada {

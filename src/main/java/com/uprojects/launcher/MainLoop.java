@@ -19,8 +19,6 @@ import java.io.IOException;
 public class MainLoop extends Application {
 
 
-
-
     @Override
     public void start(Stage stage) {
 

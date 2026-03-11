@@ -125,4 +125,8 @@ public class StageManager {
         stage.centerOnScreen();
         stage.show();
     }
+
+    public Stage getStage() {
+        return this.stage;
+    }
 }

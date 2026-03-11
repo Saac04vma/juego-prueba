@@ -6,6 +6,7 @@ import java.io.IOException;
 
 public class ServidorLauncher {
 
+    /*
     public static void main(String[] args) {
 
         try {
@@ -15,4 +16,6 @@ public class ServidorLauncher {
             e.printStackTrace();
         }
     }
+
+     */
 }

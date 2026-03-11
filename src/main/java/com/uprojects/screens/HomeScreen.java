@@ -34,6 +34,13 @@ public class HomeScreen extends ControladorPantalla {
     private PerfilJugador perfilLocal;
 
 
+    public HomeScreen(StageManager stageManager) {
+
+        // Instanciamos el perfil del jugador
+        perfilLocal = new PerfilJugador();
+        this.stageManager = stageManager;
+    }
+
     public HomeScreen() {
 
         // Instanciamos el perfil del jugador
@@ -48,11 +55,12 @@ public class HomeScreen extends ControladorPantalla {
     @FXML
     public void startLobby(ActionEvent e) {
 
+        limpiarRecursos();
         String hostIP = "";
 
         try {
 
-            hostIP = InetAddress.getLocalHost().getHostAddress();
+            hostIP = obtenerIpLocal();
 
             // Creando servidor local
             servidorLocal = new GameServer();
@@ -69,12 +77,12 @@ public class HomeScreen extends ControladorPantalla {
             conexion.colorJugador = perfilLocal.getColor().isEmpty() ? "Amarillo" : perfilLocal.getColor();
             conexion.idJugador = cliente.getID();
 
-            GamePane lobby = new GamePane(stageManager.scene, cliente, cliente.getID(), true, conexion.nombreJugador, conexion.colorJugador);
+            GamePane lobby = new GamePane(stageManager.scene, cliente, cliente.getID(), true, servidorLocal, conexion.nombreJugador, conexion.colorJugador, stageManager);
 
             configurarRedListeners(lobby);
 
             // Como esta creando el lobby, es anfitrion
-            cliente.connect(5000, "localhost", Red.TCP_PORT, Red.UDP_PORT);
+            cliente.connect(5000, hostIP, Red.TCP_PORT, Red.UDP_PORT);
             cliente.sendTCP(conexion);
 
             stageManager.setRoot(lobby, "Lobby de espera");
@@ -108,7 +116,7 @@ public class HomeScreen extends ControladorPantalla {
                 cliente.start();
 
 
-                GamePane lobby = new GamePane(stageManager.scene, cliente, 0, false, perfilLocal.getNombre(), perfilLocal.getColor());
+                GamePane lobby = new GamePane(stageManager.scene, cliente, 0, false, null, perfilLocal.getNombre(), perfilLocal.getColor(), stageManager);
                 configurarRedListeners(lobby);
                 // Nos conectamos a la IP que el usuario proporsiono
                 cliente.connect(5000, ipHost, Red.TCP_PORT, Red.UDP_PORT);
@@ -117,15 +125,11 @@ public class HomeScreen extends ControladorPantalla {
 
             } catch (IOException ex) {
                 // Enseñamos la alerta al usurario (se puede mejorar la UI... un dia de estos)
-                System.err.println("No se pudo conectar a la IP: " + ipHost);
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Error de Conexión");
-                alert.setHeaderText("No se pudo conectar al Lobby");
-                alert.setContentText("No se encontró ningún servidor en la IP: " + ipHost + "\n\nVerifica que la IP sea correcta y que el host ya haya creado la sala.");
-                alert.showAndWait();
+                showAlert("Error", "No se pudo conectar a la IP " + ipHost);
 
-                // Detenemos el cliente porsia habia iniciado
-                if (cliente != null) cliente.stop();
+
+                // Detenemos el cliente y servidor porsia habia iniciado
+                limpiarRecursos();
             }
         }
     }
@@ -134,7 +138,6 @@ public class HomeScreen extends ControladorPantalla {
     @FXML
     public void cuentaJugador(ActionEvent event) {
 
-        System.out.println("SI SEÑOR");
         ConfiguracionPane configPane = new ConfiguracionPane(perfilLocal, () -> {
             try {
                 // Ruta corregida a /styles/homescreen.fxml
@@ -152,10 +155,62 @@ public class HomeScreen extends ControladorPantalla {
         stageManager.setRoot(configPane, "Configuración de Cuenta");
     }
 
+    public void cerrarAplicacion() {
+
+        System.out.println("Cerrando aplicación...");
+
+        // De nuevo limpiamos los recursos que quizas quedaron abiertos
+        if (cliente != null) {
+            try {
+                System.out.println("Deteniendo cliente de red...");
+                cliente.stop();    // Esto deteniene el hilo
+                cliente.close();   // Y esto cierra el socket
+                System.out.println("Cliente detenido correctamente");
+            } catch (Exception ex) {
+                System.err.println("Error al detener cliente: " + ex.getMessage());
+            }
+            cliente = null;
+        }
+
+        if (servidorLocal != null) {
+            try {
+                System.out.println("Deteniendo servidor local...");
+                servidorLocal.detenerServidor(); // Your existing method
+                System.out.println("Servidor detenido correctamente");
+            } catch (Exception ex) {
+                System.err.println("Error al detener servidor: " + ex.getMessage());
+            }
+            servidorLocal = null;
+        }
+
+        // Cerramos JavaFx
+        if (stageManager != null && stageManager.getStage() != null) {
+            Stage stage = stageManager.getStage();
+
+            // Platform.runLater ejecuta la funcion callback (Runnable aqui) en el hilo de JavaFx, asi evitamos un bloqueo por hilo ocupado
+            Platform.runLater(() -> {
+                try {
+                    stage.close();
+                    System.out.println("Ventana cerrada");
+                } catch (Exception ex) {
+                    System.err.println("Error al cerrar ventana: " + ex.getMessage());
+                }
+            });
+        }
+
+        // Esto es para cerrar la JVM
+        // Platform.exit() llama a Application.stop() y asi cerramos
+        Platform.exit();
+
+        // Porsia el JVM no quiere cerrar. Por ahora no lo he necesitado
+        // System.exit(0);
+
+        System.out.println("Aplicación cerrada exitosamente");
+    }
 
     @FXML
     public void salirDelJuego(ActionEvent e) {
-
+        cerrarAplicacion();
     }
 
     private void configurarRedListeners(GamePane paneActual) {
@@ -191,6 +246,9 @@ public class HomeScreen extends ControladorPantalla {
                     paneActual.manejarElectrocucion(electrocucion);
                 }
 
+                if (objeto instanceof Red.PaqueteRemoverJugador paquete) {
+                    paneActual.removerJugadorRemoto(paquete);
+                }
 
                 if (objeto instanceof Red.PaqueteConexion) {
                     System.out.println("RECIBIDA PAQUETE DE CONEXION");
@@ -214,35 +272,60 @@ public class HomeScreen extends ControladorPantalla {
         });
     }
 
-    private void prepararCliente(String ip, boolean esHost) throws IOException {
-        cliente = new Client();
-        Red.registrar(cliente.getKryo());
+    // Limpiamos recursos del cliente y servidor para permitir crear otro lobby al finalizar una partida
+    private void limpiarRecursos() {
 
-        // 1. START the client thread first
-        cliente.start();
+        if (cliente != null) {
+            try {
+                cliente.stop();
+                cliente.close();
+            } catch (Exception e) {
+                System.err.println("Error limpiando cliente: " + e.getMessage());
+            }
+            cliente = null;
+        }
 
-        // 2. CREATE the UI pane first (so the listener has something to update)
-        // We pass 0 as a placeholder ID; Kryonet will give us the real one after connect
-        GamePane gamePane = new GamePane(stageManager.scene, cliente, 0, esHost, "", "Amarillo");
+        // Cerrar servidor en caso de que fuera anfitrion
+        if (servidorLocal != null) {
+            try {
+                servidorLocal.detenerServidor();
+            } catch (Exception e) {
+                System.err.println("Error limpiando server: " + e.getMessage());
+            }
+            servidorLocal = null;
+        }
 
-        // 3. ADD LISTENERS BEFORE CONNECTING
-        // This ensures we catch the very first packet the server sends
-        configurarRedListeners(gamePane);
-
-        // 4. NOW CONNECT
-        cliente.connect(5000, ip, Red.TCP_PORT, Red.UDP_PORT);
-
-        // 5. Update the local player's ID now that we are connected
-        gamePane.getLocalPlayer().setId(cliente.getID());
-
-        stageManager.setRoot(gamePane, "Lobby");
+        // Demora para evitar una condicion de carrera entre que el jugador hacer click y la liberacion de los puertos
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
-    private String obtenerIpLocal() {
+    @Override
+    public void setStageManager(StageManager manager) {
+        super.setStageManager(manager);
+        this.stageManager.getStage().setOnCloseRequest(e -> {
+            cerrarAplicacion();
+        });
+    }
+
+    private String obtenerIpLocal() throws UnknownHostException {
         try {
             return InetAddress.getLocalHost().getHostAddress();
         } catch (Exception e) {
             return "127.0.0.1";
         }
+    }
+
+    private void showAlert(String title, String message) {
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle(title);
+            alert.setHeaderText(null);
+            alert.setContentText(message);
+            alert.showAndWait();
+        });
     }
 }

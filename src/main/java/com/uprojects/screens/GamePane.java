@@ -9,6 +9,7 @@ import com.uprojects.entities.RemotePlayer;
 import com.uprojects.helpers.CollisionChecker;
 import com.uprojects.helpers.KeyHandler;
 import com.uprojects.entities.Player;
+import com.uprojects.server.GameServer;
 import com.uprojects.server.Red;
 import com.uprojects.stages.MapHandler;
 import com.uprojects.ui.ArreglarCablesPane;
@@ -16,7 +17,9 @@ import com.uprojects.ui.TareaPane;
 import com.uprojects.ui.VotacionPane;
 import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Group;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -38,9 +41,12 @@ public class GamePane extends Pane {
 
 
     // Configuracion de cliente para servidor
+    private GameServer servidorLocal;
     private Client cliente;
     private HashMap<Integer, RemotePlayer> jugadoresRemotos;
     private int tareasRestantes;
+    private boolean esHost;
+    private StageManager stageManager;
 
     // Config Pantalla
     private final int originalTileSize = 32; // Eje: 16x16 tiles
@@ -67,6 +73,7 @@ public class GamePane extends Pane {
     // Canvas JavaFx
     public final Canvas canvas;
     private final GraphicsContext gc;
+    private AnimationTimer gameLoop;
 
 
     // Contador de FPS
@@ -98,13 +105,21 @@ public class GamePane extends Pane {
     private Label lblContador;
     private Label lblLocalIP;
 
-    public GamePane(Scene scene, Client cliente, int localID, boolean isHost, String nombreJugadorLocal, String colorJugadorLocal) {
+    public GamePane(Scene scene, Client cliente, int localID, boolean isHost, GameServer servidor, String nombreJugadorLocal, String colorJugadorLocal, StageManager stageManager) {
 
         this.canvas = new Canvas();
+        this.stageManager = stageManager;
+        this.esHost = isHost;
         this.localID = localID;
         this.cliente = cliente;
         this.localPlayerName = nombreJugadorLocal;
         this.localPlayerColor = colorJugadorLocal;
+
+        if (servidor != null) {
+            this.servidorLocal = servidor;
+        } else {
+            this.servidorLocal = null;
+        }
 
         Group group = new Group(canvas);
 
@@ -128,20 +143,6 @@ public class GamePane extends Pane {
         this.sceneProperty().addListener((obs, oldS, nuevaScene) -> {
             if (nuevaScene != null) {
                 this.keyH = new KeyHandler(scene);
-
-                /*
-                nuevaScene.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
-                    if (keyH.accionarTarea()) {
-                        System.out.println("E Detectada!");
-                        if (tareaActual != null && tareaActual.getUiPane() != null) {
-                            cerrarTareaActual();
-                        } else {
-                            abrirTareaActual();
-                        }
-                    }
-                });
-                 */
-                System.out.println("KeyHandler attached to active scene: " + nuevaScene);
             }
         });
 
@@ -233,7 +234,7 @@ public class GamePane extends Pane {
 
         inicializarTareaUIs();
 
-        new AnimationTimer() {
+        this.gameLoop = new AnimationTimer() {
             @Override
             public void handle(long now) {
 
@@ -263,7 +264,9 @@ public class GamePane extends Pane {
                     System.err.println("================================");
                 }
             }
-        }.start();
+        };
+
+        gameLoop.start();
     }
 
 
@@ -405,6 +408,16 @@ public class GamePane extends Pane {
     }
 
     public void removerJugadorRemoto(Red.PaqueteRemoverJugador datos) {
+
+        jugadoresRemotos.remove(datos.idJugadorDesconectado);
+
+        Platform.runLater(() -> {
+            lblContador.setText("Jugadores: " + datos.totalJugadoresConectados + "/10 (Min. 5)");
+            if (btnEmpezar != null) {
+                btnEmpezar.setDisable(!datos.puedeEmpezar);
+            }
+
+        });
 
     }
 
@@ -712,7 +725,45 @@ public class GamePane extends Pane {
     }
 
     private void irAMenuPrincipal() {
+        if (this.gameLoop != null) {
+            this.gameLoop.stop();
+            this.gameLoop = null;
+        }
 
+        if (this.cliente != null) {
+
+            try {
+                this.cliente.stop();
+                this.cliente.close();
+            } catch (Exception e) {
+                System.out.println("Error cerrando el cliente " + e.getMessage());
+                e.printStackTrace();
+            }
+
+            this.cliente = null;
+        }
+
+
+        if (this.servidorLocal != null) {
+            System.out.println("Tratando de cerrar servidor");
+            this.servidorLocal.detenerServidor();
+            this.servidorLocal = null;
+        }
+
+        Platform.runLater(() -> {
+            try {
+                // Cargamos el menu principal y cambiamos la scene de JavaFx
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/styles/homescreen.fxml"));
+                Parent root = loader.load();
+                HomeScreen controller = loader.getController();
+                controller.setStageManager(this.stageManager);
+
+                stageManager.setRoot(root, "Among Us Uneg");
+            } catch (IOException e) {
+                System.err.println("Error al regresar al menu principal: " + e.getMessage());
+                e.printStackTrace();
+            }
+        });
     }
 
     public Player getLocalPlayer() {

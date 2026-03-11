@@ -27,7 +27,6 @@ public class GameServer extends Listener {
 
 
     private HashMap<Integer, ServerPlayer> jugadores = new HashMap<>();
-    private final ConcurrentHashMap<Integer, Red.PaqueteActualizarJugador> playersInfo = new ConcurrentHashMap<>();
     private boolean juegoIniciado = false;
 
     public GameServer() throws IOException {
@@ -97,10 +96,11 @@ public class GameServer extends Listener {
         System.out.println("Jugador desconectado. Total: " + jugadores.size());
 
         jugadores.remove(conexion.getID());
-        playersInfo.remove(conexion.getID());
 
         Red.PaqueteRemoverJugador removerJugador = new Red.PaqueteRemoverJugador();
-        removerJugador.idJugador = conexion.getID();
+        removerJugador.idJugadorDesconectado = conexion.getID();
+        removerJugador.totalJugadoresConectados = jugadores.size();
+        removerJugador.puedeEmpezar = jugadores.size() >= 3;
 
         server.sendToAllTCP(removerJugador);
 
@@ -185,7 +185,8 @@ public class GameServer extends Listener {
 
             // Enviamos la señal para que los demas jugadores dejen de renderizarlo
             Red.PaqueteRemoverJugador remove = new Red.PaqueteRemoverJugador();
-            remove.idJugador = conexion.getID();
+            remove.idJugadorDesconectado = conexion.getID();
+            remove.totalJugadoresConectados = jugadores.size();
             server.sendToAllExceptTCP(conexion.getID(), remove);
 
             conexion.close();
@@ -418,6 +419,32 @@ public class GameServer extends Listener {
         status.puedeEmpezar = jugadores.size() >= 2;
         status.mapaActual = "lobby.tmx";
         server.sendToAllTCP(status);
+    }
+
+    public void detenerServidor() {
+        System.out.println("Cerrando servidor...");
+
+
+        if (this.server != null) {
+
+            try {
+
+                this.server.stop();
+
+                this.server.close();
+            } catch (Exception e) {
+                System.out.println("Error cerrando el servidor " + e.getMessage());
+                e.printStackTrace();
+            }
+
+            this.server = null;
+        }
+
+        if (!jugadores.isEmpty()) {
+            jugadores.clear();
+        }
+
+        System.out.println("Servidor finalizado. Ya deberian estar libres los puertos");
     }
 
 }

@@ -59,15 +59,16 @@ public class KeyHandler {
     }
 
     public boolean accionarTarea() {
-        return pressedKeys.contains(KeyCode.E);
+        return apenasPresionada(KeyCode.E);
     }
 
     public boolean electrocutar() {
-        return pressedKeys.contains(KeyCode.F);
+        return apenasPresionada(KeyCode.F);
     }
 
     public void resetPressedKeys() {
         this.pressedKeys.clear();
+        this.consumedKeys.clear();
     }
 
     public boolean getUpPressed() {

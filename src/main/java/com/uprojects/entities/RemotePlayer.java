@@ -30,6 +30,10 @@ public class RemotePlayer extends Entidad {
     }
 
     public void draw(GraphicsContext gc, Player localPlayer) {
+
+        if (this.oculto)
+            return;
+
         // Remote players draw relative to the local player's world position
         //double screenX = worldX - localPlayer.worldX + localPlayer.cameraX;
         //double screenY = worldY - localPlayer.worldY + localPlayer.cameraY;

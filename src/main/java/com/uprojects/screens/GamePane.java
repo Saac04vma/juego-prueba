@@ -46,6 +46,10 @@ public class GamePane extends Pane {
     private final int originalTileSize = 32; // Eje: 16x16 tiles
     private final int scale = 1;
 
+    // ProgressBar
+    private int totalTareasGlobales;
+    private javafx.scene.control.ProgressBar barraProgresoTareas;
+
 
     // World settings
     // Tamano de cuadros
@@ -57,6 +61,8 @@ public class GamePane extends Pane {
     private List<Tarea> tareasPorHacer;
     private Tarea tareaActual;
     private boolean impostor = false;
+    private long tiempoDeUltimaPeticionKill = 0;
+    private final long enfriamientoKill = 15000; // 15 segundos == 15000 ms
 
     // Canvas JavaFx
     public final Canvas canvas;
@@ -175,6 +181,16 @@ public class GamePane extends Pane {
             irAMenuPrincipal(); // Logic to close the game window
         });
 
+        //Progress Bar
+        barraProgresoTareas = new javafx.scene.control.ProgressBar(0);
+        barraProgresoTareas.setPrefWidth(300);
+        barraProgresoTareas.setPrefHeight(25);
+        barraProgresoTareas.setTranslateX(20);
+        barraProgresoTareas.setTranslateY(20);
+        barraProgresoTareas.setStyle("-fx-accent: #2ecc71; -fx-control-inner-background: #34495e; -fx-background-color: transparent; -fx-border-color: #2ecc71; -fx-border-width: 2;");
+        barraProgresoTareas.setVisible(false);
+
+
         lobbyUI.getChildren().addAll(lblLocalIP, lblContador, btnSalir);
 
         // 3. Add Start button only for Host
@@ -186,7 +202,7 @@ public class GamePane extends Pane {
         }
 
 
-        this.getChildren().addAll(group, tareaOverlay, lobbyUI);
+        this.getChildren().addAll(group, tareaOverlay, lobbyUI, barraProgresoTareas);
 
         // Nos aseguramos de que sea visible el pane antes de iniciar el juego, de lo contrario el ancho y alto calculado seria de 0,0
         this.layoutBoundsProperty().addListener((obs, oldV, newV) -> {
@@ -282,7 +298,13 @@ public class GamePane extends Pane {
         }
 
         if (keyH.electrocutar() && this.impostor) {
-            solicitarKill();
+
+            long tiempoActual = System.currentTimeMillis();
+
+            if (tiempoActual - tiempoDeUltimaPeticionKill >= enfriamientoKill) {
+                tiempoDeUltimaPeticionKill = tiempoActual;
+                solicitarKill();
+            }
         }
 
         for (RemotePlayer jugadorExterno : jugadoresRemotos.values()) {
@@ -296,10 +318,6 @@ public class GamePane extends Pane {
         gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
         gc.save();
 
-
-        // Tamaño del canvas (para ajustar el campo visible)
-        //int anchoCampo = (int) canvas.getWidth();
-        //int altoCampo = (int) canvas.getHeight();
 
         // Creando zoom para que el personaje no vea todo el mapa
         int zoom = 3;
@@ -321,6 +339,7 @@ public class GamePane extends Pane {
             tarea.drawInteractionBox(gc);
         }
 
+
         // We pass the graphics object to be able to set graphics per player
         //mapHandler.draw(this.gc, zoom);
         //localPlayer.draw(this.gc);
@@ -328,12 +347,61 @@ public class GamePane extends Pane {
         gc.restore();
 
 
-        // Aqui dibujamos componentes de UI (menus, botones, etc)
+        // Aqui dibujamos componentes de UI (menus, botones, etc) en una posicion fija
 
-        // Draw UI Elements in Screen Space (Fixed position)
+        dibujarImpostorEnfriamiento(gc);
+
         gc.setFill(javafx.scene.paint.Color.WHITE);
         gc.fillText(fpsDisplay, 120, 120); // Draws at top-left
 
+    }
+
+    private void dibujarImpostorEnfriamiento(GraphicsContext gc) {
+        if (this.impostor && !localPlayer.wasKilled()) {
+
+            // No ha hecho nada o falló una kill
+            if (this.tiempoDeUltimaPeticionKill == 0)
+                return;
+
+            long tiempoActual = System.currentTimeMillis();
+            long transcurrido = tiempoActual - tiempoDeUltimaPeticionKill;
+
+            // Solo dibujamos si esta en enfriamiento
+            if (transcurrido < enfriamientoKill) {
+                double porcentajeRestante = (double) transcurrido / enfriamientoKill;
+                double angulo = 360 * porcentajeRestante;
+
+                // Lo posicionamos abajo a la derecha (como Capriles en el 2014)
+                double x = getWidth() - 100;
+                double y = getHeight() - 100;
+                double size = 60;
+
+                // Circulo (dark/disabled)
+                gc.setFill(Color.rgb(0, 0, 0, 0.6));
+                gc.fillOval(x, y, size, size);
+
+                // Rellenado
+                gc.setFill(Color.rgb(255, 0, 0, 0.5)); // Red "Kill" color
+                gc.fillArc(x, y, size, size, 90, angulo, javafx.scene.shape.ArcType.ROUND);
+
+                // Dibujamos tambien los segundos restantes
+                long secondsLeft = (enfriamientoKill - transcurrido) / 1000 + 1;
+                gc.setFill(Color.WHITE);
+                gc.setFont(new javafx.scene.text.Font("Arial", 20));
+                gc.fillText(String.valueOf(secondsLeft), x + 22, y + 38);
+
+                gc.setFont(new javafx.scene.text.Font("Arial", 12));
+                gc.fillText("TASE", x + 18, y + size + 15);
+            } else {
+                // De lo contrario simplemente dibujamos que puede electrocutar
+                double x = getWidth() - 100;
+                double y = getHeight() - 100;
+                gc.setFill(Color.RED);
+                gc.fillOval(x, y, 60, 60);
+                gc.setFill(Color.WHITE);
+                gc.fillText("LISTO", x + 10, y + 35);
+            }
+        }
     }
 
     public void removerJugadorRemoto(Red.PaqueteRemoverJugador datos) {
@@ -380,7 +448,6 @@ public class GamePane extends Pane {
 
     private void inicializarTareaUIs() {
         for (Tarea tarea : tareasPorHacer) {
-            //System.out.println("Processing task: " + tarea.getNombre());
             try {
 
                 TareaPane ui = tarea.crearUI();
@@ -395,6 +462,9 @@ public class GamePane extends Pane {
                 ui.setOnTareaCompletada(() -> {
 
                     System.out.println("Tarea completada!");
+                    Red.PaqueteTareaCompletada tareaCompletada = new Red.PaqueteTareaCompletada();
+                    tareaCompletada.idJugador = localID;
+                    cliente.sendTCP(tareaCompletada);
                     // Autocerrado despues de un segundo luego de completar la tarea
                     javafx.animation.PauseTransition delay =
                             new javafx.animation.PauseTransition(javafx.util.Duration.seconds(1));
@@ -557,10 +627,11 @@ public class GamePane extends Pane {
         // Si es impostor, no tiene que hacer tareas
         this.tareasPorHacer = !this.impostor ? mapHandler.calcularPosicionTareas() : new ArrayList<Tarea>();
         this.tareasRestantes = datos.tareasRestantes;
-
+        this.totalTareasGlobales = datos.tareasRestantes; // Inicialmente son iguales pero solo vamos a restar a tareas restantes
 
         inicializarTareaUIs();
 
+        this.barraProgresoTareas.setVisible(true);
 
         // Enviamos a todos los jugadores a la biblioteca (debemos calcular esto mejor, por ahora se queda asi)
         this.localPlayer.setWorldPosition(datos.inicioX, datos.inicioY); // Primero al jugador local
@@ -599,12 +670,25 @@ public class GamePane extends Pane {
 
     }
 
-    // Actualizamos la variable e UI de progreso para que el jugador sepa cuanto falta
+    // Actualizamos la variable e UI de progreso para que el jugador sepa cuanto falta (Progress Bar)
     public void actualizarTareasRestantes(Red.PaqueteActualizarTareasRestantes datos) {
         this.tareasRestantes = datos.tareasRestantes;
+
+        Platform.runLater(() -> {
+            if (totalTareasGlobales > 0) {
+                double progreso = (double) (totalTareasGlobales - tareasRestantes) / totalTareasGlobales;
+                barraProgresoTareas.setProgress(progreso);
+            }
+        });
     }
 
     public void manejarElectrocucion(Red.PaqueteRespuestaKill paquete) {
+
+        // No se electrocuto a nadie
+        if (paquete.idJugadorElectrocutado == -1) {
+            System.out.println("No se electrocuto a nadie");
+            this.tiempoDeUltimaPeticionKill = 0;
+        }
 
         if (paquete.idJugadorElectrocutado == localID) {
             localPlayer.setKilled(true);
@@ -617,6 +701,7 @@ public class GamePane extends Pane {
             if (jugadorRemoto.getID() == paquete.idJugadorElectrocutado) {
                 jugadorRemoto.setKilled(true);
                 this.tareasRestantes = paquete.tareasRestantes;
+
                 break;
             }
         }

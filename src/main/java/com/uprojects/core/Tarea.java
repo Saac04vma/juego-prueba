@@ -49,16 +49,13 @@ public abstract class Tarea {
                     this.worldX,
                     this.worldY - 8
             );
+            gc.strokeRect(
+                    this.worldX,
+                    this.worldY,
+                    this.width,
+                    this.height
+            );
         }
-
-        // 2. Draw the bounding box
-        // NOTE: Use absolute world coordinates
-        gc.strokeRect(
-                this.worldX,
-                this.worldY,
-                this.width,
-                this.height
-        );
 
 
     }

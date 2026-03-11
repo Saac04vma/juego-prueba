@@ -150,7 +150,14 @@ public class GameServer extends Listener {
 
             // Establecemos el ID del jugador en base al ID de la conexion. Esto nos facilita garantizar la unicidad del ID
             jugador.idJugador = conexion.getID();
-            playersInfo.put(jugador.idJugador, jugador);
+
+            ServerPlayer serverPlayer = jugadores.get(jugador.idJugador);
+
+            if (serverPlayer != null) {
+                serverPlayer.x = jugador.x;
+                serverPlayer.y = jugador.y;
+            }
+
 
             server.sendToAllExceptUDP(conexion.getID(), jugador);
         }
@@ -214,15 +221,19 @@ public class GameServer extends Listener {
 
             if (serverPlayer != null && serverPlayer.impostor) {
 
+                long tiempoActual = System.currentTimeMillis();
+                long enfriamientoMS = 15000; // 15 segundos == 15000 milisegundos
+
+
+                if (tiempoActual - serverPlayer.tiempoUltimaKill < enfriamientoMS) {
+                    System.out.println("Kill denegada!");
+                    return;
+                }
+
                 System.out.println("El impostor solicitó electrocución!");
 
                 for (ServerPlayer jugador : jugadores.values()) {
 
-                    System.out.println("Analisis de jugador");
-                    System.out.println("Nombre: " + jugador.nombre);
-                    System.out.println("Es impostor: " + jugador.impostor);
-                    System.out.println("Tiene el mismo id: " + (jugador.id == serverPlayer.id ? "Si" : "No"));
-                    System.out.println("Esta muerto: " + jugador.killed);
 
                     if (!jugador.impostor && jugador.id != serverPlayer.id && !jugador.killed) {
                         // Calculamos el centro del sprite. 32 porque los personajes son de 32x32 pixeles. Quizas al comienzo del juego podemos pasar el tilesize al servidor y manejarlo asi
@@ -237,10 +248,10 @@ public class GameServer extends Listener {
                         double rango = 45.0;
 
 
-                        System.out.println("Distancia: " + distancia + " -> Rango: " + rango);
                         if (distancia <= rango) {
                             System.out.println("Kill confirmada. " + serverPlayer.nombre + " ha electrocutado a " + jugador.nombre);
                             jugador.killed = true;
+                            serverPlayer.tiempoUltimaKill = tiempoActual; // Actualizamos su tiempo para que no pueda spamear kills
                             int tareasPendienteDelElectrocutado = jugador.tareasTotales - jugador.tareasCompletadas;
                             this.tareasRestantes -= tareasPendienteDelElectrocutado;
 

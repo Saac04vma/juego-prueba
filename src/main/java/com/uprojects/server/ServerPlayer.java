@@ -13,7 +13,7 @@ public class ServerPlayer {
     public int spriteCounter = 0;
     public int spriteNumber = 1;
     public boolean impostor;
-    public long ultimaKill;
+    public long tiempoUltimaKill;
 
     public ServerPlayer(int id, String nombre, String color) {
         this.id = id;
@@ -23,6 +23,7 @@ public class ServerPlayer {
         this.accion = "up";
         this.facingTowards = "left";
         this.impostor = false;
+        this.tiempoUltimaKill = 0;
     }
 
     public void setTargets(double worldX, double worldY) {

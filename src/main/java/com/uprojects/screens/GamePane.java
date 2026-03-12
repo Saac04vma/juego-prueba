@@ -19,6 +19,7 @@ import com.uprojects.ui.DuctoPane;
 import com.uprojects.ui.TareaPane;
 import com.uprojects.ui.VotacionPane;
 import javafx.animation.AnimationTimer;
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Group;
@@ -32,6 +33,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.util.Duration;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -240,6 +242,10 @@ public class GamePane extends Pane {
 
         inicializarTareaUIs();
 
+        if (this.impostor) {
+            tiempoDeUltimaPeticionKill = System.currentTimeMillis();
+        }
+
         this.gameLoop = new AnimationTimer() {
             @Override
             public void handle(long now) {
@@ -375,9 +381,12 @@ public class GamePane extends Pane {
     private void dibujarImpostorEnfriamiento(GraphicsContext gc) {
         if (this.impostor && !localPlayer.wasKilled()) {
 
+            /*
             // No ha hecho nada o falló una kill
             if (this.tiempoDeUltimaPeticionKill == 0)
                 return;
+
+             */
 
             long tiempoActual = System.currentTimeMillis();
             long transcurrido = tiempoActual - tiempoDeUltimaPeticionKill;
@@ -444,12 +453,12 @@ public class GamePane extends Pane {
 
     public void agregarJugadorRemoto(Red.PaqueteConexion datos) {
         // Si el ID soy yo mismo, no me agrego a la lista de "remotos"
-        System.out.println("Creando jugador remoto");
         if (datos.idJugador == this.localID) {
             return;
         }
 
 
+        System.out.println("Creando jugador remoto");
         System.out.println("Viendo si es duplicado");
         // Evitar duplicados
         if (jugadoresRemotos.containsKey(datos.idJugador)) return;
@@ -496,9 +505,16 @@ public class GamePane extends Pane {
 
                 ui.setOnTareaCompletada(() -> {
 
+
+                    tarea.setCompletada(true);
+
+                    // Bloqueamos la intefaz para evitar spameo the tareas hechas
+                    //ui.setDisable(true);
+
                     System.out.println("Tarea completada!");
                     Red.PaqueteTareaCompletada tareaCompletada = new Red.PaqueteTareaCompletada();
                     tareaCompletada.idJugador = localID;
+                    tareaCompletada.tipoTarea = tarea.getNombre();
                     cliente.sendTCP(tareaCompletada);
                     // Autocerrado despues de un segundo luego de completar la tarea
                     javafx.animation.PauseTransition delay =
@@ -782,21 +798,20 @@ public class GamePane extends Pane {
                 jugadorRemoto.setAccion("killed");
                 this.tareasRestantes = paquete.tareasRestantes;
 
-                if (impostor) {
+                if (this.impostor) {
                     localPlayer.setAccion("attacking");
                     localPlayer.setPaused(true);
                     keyH.resetPressedKeys();
 
 
-                    long tiempoActual = System.currentTimeMillis();
-                    long tiempoCongelado = tiempoActual + 2000; // 2 segundos
+                    PauseTransition pauseAtaque = new PauseTransition(Duration.seconds(1.5));
 
-                    while (tiempoActual < tiempoCongelado) {
-                        tiempoActual = System.currentTimeMillis();
-                    }
+                    pauseAtaque.setOnFinished((e) -> {
+                        localPlayer.setPaused(false);
+                        localPlayer.setAccion("idle");
+                    });
 
-                    localPlayer.setPaused(false);
-                    localPlayer.setAccion("idle");
+                    pauseAtaque.play();
 
 
                 }

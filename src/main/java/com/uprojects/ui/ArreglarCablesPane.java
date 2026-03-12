@@ -214,7 +214,7 @@ public class ArreglarCablesPane extends TareaPane implements Initializable {
 
     @FXML
     private void handleCerrar() {
-        ocultarTarea(); // Calls the base method in TareaPane
+        ocultarTarea(); // Cerrar la UI
         if (onCerrarTarea != null) onCerrarTarea.run();
     }
 
@@ -232,71 +232,5 @@ public class ArreglarCablesPane extends TareaPane implements Initializable {
         //btnConectar.setDisable(false);
     }
 
-    /*
-    @Override
-    protected void uiCerrarTarea() {
-
-        System.out.println("Deberia cerrarse...");
-        System.out.println("onCerrarTarea callback is null: " + (onCerrarTarea == null));
-
-        this.setVisible(false);
-        this.setDisable(true);
-    }
-
-    @Override
-    public void actualizarUI() {
-        if (tarea instanceof ArreglarCablesTarea) {
-            ArreglarCablesTarea tareaCables = (ArreglarCablesTarea) tarea;
-            lblProgreso.setText("Cables: " + tareaCables.getCablesConectados() + "/3");
-
-            if (tarea.fueCompletada()) {
-                lblCompletado.setText("¡TAREA COMPLETADA!");
-                btnConectar.setDisable(true);
-                if (onTareaCompletada != null) {
-                    onTareaCompletada.run();
-                }
-            }
-        }
-    }
-
-
-
-    @FXML
-    private void handleConectarCable() {
-        if (tarea != null && !tarea.fueCompletada()) {
-            tarea.actualizarTarea(1.0);
-            actualizarUI();
-        }
-
-    }
-     */
-
-    /*
-    @FXML
-    private void handleCerrar() {
-
-        System.out.println("handleCerrar called!");
-        System.out.println("ocultarTarea() called");
-        ocultarTarea();
-
-        System.out.println("About to run onCerrarTarea callback...");
-        System.out.println("onCerrarTarea is null: " + (onCerrarTarea == null));
-
-        if (onCerrarTarea != null) {
-            System.out.println("Running onCerrarTarea callback!");
-            onCerrarTarea.run();
-        } else {
-            System.err.println("ERROR: onCerrarTarea callback is NULL!");
-        }
-
-
-        ocultarTarea();
-        if (onCerrarTarea != null) {
-            onCerrarTarea.run();
-        }
-
-
-    }
-    */
 
 }

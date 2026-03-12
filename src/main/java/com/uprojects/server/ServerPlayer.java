@@ -1,5 +1,10 @@
 package com.uprojects.server;
 
+
+import com.uprojects.core.Tarea;
+
+import java.util.ArrayList;
+
 public class ServerPlayer {
 
     public int id;
@@ -14,6 +19,7 @@ public class ServerPlayer {
     public int spriteNumber = 1;
     public boolean impostor;
     public long tiempoUltimaKill;
+    public ArrayList<String> tareasFinalizadas;
 
     public ServerPlayer(int id, String nombre, String color) {
         this.id = id;
@@ -25,6 +31,7 @@ public class ServerPlayer {
         this.impostor = false;
         this.tiempoUltimaKill = 0;
         this.oculto = false;
+        this.tareasFinalizadas = new ArrayList<>(4); // Manejamos por ahora solo 4 posibles tareas
     }
 
     public void setTargets(double worldX, double worldY) {

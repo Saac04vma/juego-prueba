@@ -248,7 +248,9 @@ public class MapHandler {
 
                                     if (esImpostor && (estacion instanceof SalaVotacion || estacion instanceof DuctoTarea)) {
                                         estaciones.add(estacion);
-                                    } else if (!esImpostor && !(estacion instanceof DuctoTarea)) {
+                                    }
+
+                                    if (!esImpostor && !(estacion instanceof DuctoTarea)) {
                                         estaciones.add(estacion);
                                     }
 

@@ -3,6 +3,7 @@ package com.uprojects.server;
 import com.esotericsoftware.kryonet.Connection;
 import com.esotericsoftware.kryonet.Listener;
 import com.esotericsoftware.kryonet.Server;
+import com.uprojects.core.Tarea;
 import com.uprojects.entities.RemotePlayer;
 
 import java.io.IOException;
@@ -18,9 +19,10 @@ public class GameServer extends Listener {
     private HashMap<Integer, Integer> votos;
     private HashMap<String, Integer> coloresDisponibles;
     private static final String[] colores = {"Amarillo", "Azul", "AzulClaro", "Gris", "Morado", "Naranja", "Rojo", "Rosado", "Verde", "VerdeOscuro"};
+    private final int MIN_JUGADORES = 2;
+    private final int MAX_JUGADORES = 10;
     private int votosRecibidos;
     private int cantImpostores;
-    private final int MAX_JUGADORES = 10;
     private final int TCP_PORT = 54555;
     private final int UDP_PORT = 54777;
 
@@ -120,7 +122,11 @@ public class GameServer extends Listener {
         Red.PaqueteRemoverJugador jugadorDesconectado = new Red.PaqueteRemoverJugador();
         jugadorDesconectado.idJugadorDesconectado = conexion.getID();
         jugadorDesconectado.totalJugadoresConectados = jugadores.size();
-        jugadorDesconectado.puedeEmpezar = jugadores.size() >= 3;
+        jugadorDesconectado.puedeEmpezar = jugadores.size() >= MIN_JUGADORES;
+
+        if (jugador.impostor) {
+            cantImpostores--;
+        }
 
 
         server.sendToAllTCP(jugadorDesconectado);
@@ -134,8 +140,8 @@ public class GameServer extends Listener {
     public void received(Connection conexion, Object paquete) {
 
         if (paquete instanceof Red.PaquetePedirInicio) {
-            if (conexion.getID() == 1 && jugadores.size() >= 2) {
-                if (jugadores.size() >= 6) {
+            if (conexion.getID() == 1 && jugadores.size() >= MIN_JUGADORES) {
+                if (jugadores.size() >= 7) {
                     this.cantImpostores = 2;
                 } else {
                     this.cantImpostores = 1;
@@ -144,7 +150,7 @@ public class GameServer extends Listener {
             }
         }
 
-        // 1. Un jugador entra a la sala
+        // Un jugador entra a la sala
         if (paquete instanceof Red.PaqueteConexion pc) {
             pc.idJugador = conexion.getID();
 
@@ -200,7 +206,7 @@ public class GameServer extends Listener {
 
         }
 
-        // 2. Un jugador se mueve (UDP)
+        // Un jugador se mueve (UDP)
         if (paquete instanceof Red.PaqueteActualizarJugador jugador) {
 
             // Establecemos el ID del jugador en base al ID de la conexion. Esto nos facilita garantizar la unicidad del ID
@@ -219,20 +225,42 @@ public class GameServer extends Listener {
             server.sendToAllExceptUDP(conexion.getID(), jugador);
         }
 
-        // 3. Un jugador completa una tarea (TCP)
+        // Un jugador completa una tarea (TCP)
         if (paquete instanceof Red.PaqueteTareaCompletada tareaCompletada) {
             ServerPlayer jugador = jugadores.get(tareaCompletada.idJugador);
             if (jugador != null) {
+
+
+                boolean tareaEstabaCompletada = false;
+
+
+                for (String tarea : jugador.tareasFinalizadas) {
+                    if (tarea.equals(tareaCompletada.tipoTarea)) {
+                        tareaEstabaCompletada = true;
+                        break;
+                    }
+                }
+
+                // Ignoramos si ya habia sido completada
+                if (tareaEstabaCompletada)
+                    return;
+
                 jugador.tareasCompletadas++;
                 this.tareasRestantes--;
+                jugador.tareasFinalizadas.add(tareaCompletada.tipoTarea);
 
-                System.out.println(jugador.nombre + " completó una tarea (" + jugador.tareasCompletadas + "/" + jugador.tareasTotales + ")");
+                //System.out.println(jugador.nombre + " completó una tarea (" + jugador.tareasCompletadas + "/" + jugador.tareasTotales + ")");
+
+
                 verificarFinDeJuego();
+
+                System.out.println("TAREA COMPLETADA -> TAREAS RESTANTES: " + this.tareasRestantes);
 
                 Red.PaqueteActualizarTareasRestantes tareas = new Red.PaqueteActualizarTareasRestantes();
                 tareas.tareasRestantes = this.tareasRestantes;
 
                 server.sendToAllTCP(tareas);
+
             }
         }
 
@@ -289,7 +317,7 @@ public class GameServer extends Listener {
             if (serverPlayer != null && serverPlayer.impostor) {
 
                 long tiempoActual = System.currentTimeMillis();
-                long enfriamientoMS = 15000; // 15 segundos == 15000 milisegundos
+                long enfriamientoMS = 10000; // 15 segundos == 15000 milisegundos
 
 
                 if (tiempoActual - serverPlayer.tiempoUltimaKill < enfriamientoMS) {
@@ -415,6 +443,8 @@ public class GameServer extends Listener {
         // 4 tareas por jugador, sin contar a los impostores
         this.tareasRestantes = (jugadores.size() - cantImpostores) * 4;
 
+        System.out.println("INICIO DE JUEGO -> TAREAS RESTANTES: " + this.tareasRestantes);
+
         Collections.shuffle(idJugadores);
         // Como ya los barajamos, simplemente escogemos los que queramos
         int idImpostor1 = idJugadores.get(0);
@@ -513,7 +543,7 @@ public class GameServer extends Listener {
     private void broadcastLobbyStatus() {
         Red.PaqueteLobbyInfo status = new Red.PaqueteLobbyInfo();
         status.conectados = jugadores.size();
-        status.puedeEmpezar = jugadores.size() >= 2;
+        status.puedeEmpezar = jugadores.size() >= MIN_JUGADORES;
         status.mapaActual = "lobby.tmx";
         server.sendToAllTCP(status);
     }

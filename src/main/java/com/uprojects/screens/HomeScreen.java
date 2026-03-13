@@ -16,10 +16,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
+import javafx.scene.control.*;
 import javafx.scene.Node;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -38,6 +36,16 @@ public class HomeScreen extends ControladorPantalla {
     private Client cliente;
     private GameServer servidorLocal;
     private PerfilJugador perfilLocal;
+    private String mapaSeleccionado = "mapa1.tmx"; // Un valor por defecto porsia
+
+    @FXML
+    private TextField nombreConfig;
+    @FXML
+    private ComboBox<String> cmbColorConfig;
+    @FXML
+    private Button villaAsiaSuperior;
+    @FXML
+    private Button villaAsiaInferior;
 
 
     public HomeScreen(StageManager stageManager) {
@@ -51,6 +59,20 @@ public class HomeScreen extends ControladorPantalla {
 
         // Instanciamos el perfil del jugador
         perfilLocal = new PerfilJugador();
+
+
+    }
+
+    @FXML
+    public void initialize() {
+        // Verificamos que los elementos existan (ya que el controlador se comparte con otras escenas)
+        if (nombreConfig != null && cmbColorConfig != null && perfilLocal != null) {
+            System.out.println("Perfil local. Nombre: " + perfilLocal.getNombre());
+            nombreConfig.setText(perfilLocal.getNombre());
+            cmbColorConfig.setValue(perfilLocal.getColor());
+        }
+
+
     }
 
     @FXML
@@ -82,7 +104,7 @@ public class HomeScreen extends ControladorPantalla {
             conexion.colorJugador = perfilLocal.getColor().isEmpty() ? "Amarillo" : perfilLocal.getColor();
             conexion.idJugador = cliente.getID();
 
-            GamePane lobby = new GamePane(stageManager.scene, cliente, cliente.getID(), true, servidorLocal, conexion.nombreJugador, conexion.colorJugador, stageManager);
+            GamePane lobby = new GamePane(stageManager.scene, cliente, cliente.getID(), true, servidorLocal, conexion.nombreJugador, conexion.colorJugador, stageManager, this.mapaSeleccionado);
 
             configurarRedListeners(lobby);
 
@@ -121,7 +143,8 @@ public class HomeScreen extends ControladorPantalla {
                 cliente.start();
 
 
-                GamePane lobby = new GamePane(stageManager.scene, cliente, 0, false, null, perfilLocal.getNombre(), perfilLocal.getColor(), stageManager);
+                // Le pasamos el mapa seleccionado, pero es un placeholder, el servidor le mandará el mapa real cuando comience
+                GamePane lobby = new GamePane(stageManager.scene, cliente, 0, false, null, perfilLocal.getNombre(), perfilLocal.getColor(), stageManager, this.mapaSeleccionado);
                 configurarRedListeners(lobby);
                 // Nos conectamos a la IP que el usuario proporsiono
                 cliente.connect(5000, ipHost, Red.TCP_PORT, Red.UDP_PORT);
@@ -226,6 +249,29 @@ public class HomeScreen extends ControladorPantalla {
         cerrarAplicacion();
     }
 
+    @FXML
+    public void guardarConfiguracion() {
+        if (perfilLocal != null) {
+            perfilLocal.guardarPerfil(nombreConfig.getText(), cmbColorConfig.getValue());
+        }
+    }
+
+    @FXML
+    public void pantallaConfiguracion(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/styles/configuracion.fxml"));
+            Parent root = loader.load();
+
+            HomeScreen controller = loader.getController();
+            controller.setStageManager(this.stageManager);
+            controller.setPerfilLocal(this.perfilLocal);
+
+            this.stageManager.setRoot(root, "Configuración de Cuenta");
+        } catch (IOException e) {
+            showAlert("Error", "No se pudo cargar la configuración: " + e.getMessage());
+        }
+    }
+
     private void configurarRedListeners(GamePane paneActual) {
         cliente.addListener(new Listener() {
 
@@ -241,7 +287,6 @@ public class HomeScreen extends ControladorPantalla {
             public void received(Connection conexion, Object objeto) {
 
                 if (objeto instanceof Red.PaqueteLobbyInfo paquete) {
-                    boolean soyAnfitrion = conexion.getID() == 1;
                     paneActual.actualizarLobby(paquete);
                 }
 
@@ -409,6 +454,44 @@ public class HomeScreen extends ControladorPantalla {
         }
     }
 
+    public void pantallaSeleccionMapa(ActionEvent event) {
+        try {
+
+            // Cambiar el fxml al de creditos
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/styles/seleccionMapa.fxml"));
+            Parent root = loader.load();
+            HomeScreen controller = loader.getController();
+            controller.setStageManager(this.stageManager);
+            this.stageManager.setRoot(root, "Seleccion de Mapa");
+
+
+        } catch (IOException e) {
+            showAlert("Ups", "Error cargando la pantalla de seleccion de mapas: " + e.getMessage());
+        }
+    }
+
+
+    public void setMapa(ActionEvent event) {
+
+
+        // No se han inicializado
+        if (villaAsiaInferior == null || villaAsiaSuperior == null) {
+            System.out.println("No se han inicializado los botones");
+
+            return;
+        }
+
+        if (event.getSource() == villaAsiaSuperior) {
+            System.out.println("Setteando mapa a mapa1");
+            villaAsiaSuperior.requestFocus();
+            this.mapaSeleccionado = "mapa1.tmx";
+        } else if (event.getSource() == villaAsiaInferior) {
+            System.out.println("Setteando mapa a mapa2");
+            villaAsiaInferior.requestFocus();
+            this.mapaSeleccionado = "mapa2.tmx";
+        }
+    }
+
     public void pantallaAcercaDe(ActionEvent event) {
         try {
 
@@ -424,5 +507,11 @@ public class HomeScreen extends ControladorPantalla {
         }
     }
 
+    public PerfilJugador getPerfilLocal() {
+        return this.perfilLocal;
+    }
 
+    public void setPerfilLocal(PerfilJugador nuevoPerfil) {
+        this.perfilLocal = nuevoPerfil;
+    }
 }

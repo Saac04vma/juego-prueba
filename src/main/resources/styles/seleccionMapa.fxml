@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.geometry.Rectangle2D?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane prefHeight="720.0" prefWidth="1280.0" stylesheets="@homescreen.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.uprojects.screens.HomeScreen">
+    
+    <ImageView fx:id="imgFondo" pickOnBounds="true" preserveRatio="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <image>
+            <Image url="@../images/fondo_binario.jpg" />
+        </image>
+    </ImageView>
+
+    <VBox alignment="CENTER" spacing="30.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        
+        <Label style="-fx-font-family: 'AmongUsFont'; -fx-text-fill: white; -fx-font-size: 80px;" text="SELECCIONE UN MAPA" />
+      <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+         <children>
+            <Button id="villaAsiaSuperior" fx:id="villaAsiaSuperior" onAction="#setMapa" styleClass="boton-ajustes" textAlignment="CENTER">
+               <graphic>
+                    
+                    <VBox id="mapa1" fx:id="previewMapa1" alignment="CENTER" spacing="10.0" style="-fx-background-color: rgba(0, 0, 0, 0.7); -fx-background-radius: 20px; -fx-padding: 30px; -fx-max-width: 1000px;">
+                        
+                        <Label style="-fx-font-family: 'Arial'; -fx-text-fill: #00d2ff; -fx-font-size: 22px; -fx-font-weight: bold;" text="VILLA ASIA (SUPERIOR)" />
+                     <ImageView fitHeight="378.0" fitWidth="671.0" pickOnBounds="true" preserveRatio="true" VBox.vgrow="ALWAYS">
+                        <image>
+                           <Image url="@../images/villaAsiaSuperior.png" />
+                        </image>
+                        <viewport>
+                           <Rectangle2D />
+                        </viewport>
+                     </ImageView>
+                    </VBox>
+               </graphic>
+               <HBox.margin>
+                  <Insets left="48.0" right="48.0" />
+               </HBox.margin>
+            </Button>
+            <Button id="villaAsiaInferior" fx:id="villaAsiaInferior" onAction="#setMapa" styleClass="boton-ajustes" textAlignment="CENTER">
+               <graphic>
+                  <VBox id="mapa2" fx:id="previewMapa2" alignment="CENTER" spacing="10.0" style="-fx-background-color: rgba(0, 0, 0, 0.7); -fx-background-radius: 20px; -fx-padding: 30px; -fx-max-width: 1000px;">
+                     <children>
+                        <Label style="-fx-font-family: 'Arial'; -fx-text-fill: #00d2ff; -fx-font-size: 22px; -fx-font-weight: bold;" text="VILLA ASIA (INFERIOR)" />
+                        <ImageView fitHeight="378.0" fitWidth="671.0" pickOnBounds="true" preserveRatio="true" VBox.vgrow="ALWAYS">
+                           <image>
+                              <Image url="@../images/villaAsiaInferior.png" />
+                           </image>
+                           <viewport>
+                              <Rectangle2D />
+                           </viewport>
+                        </ImageView>
+                     </children>
+                  </VBox>
+               </graphic>
+               <HBox.margin>
+                  <Insets left="48.0" right="48.0" />
+               </HBox.margin>
+            </Button>
+         </children>
+      </HBox>
+      <HBox alignment="CENTER" prefHeight="100.0" prefWidth="1000.0">
+         <children>
+              
+              <Button id="volver" onAction="#volverAlMenu" styleClass="boton-amongus" text="VOLVER" textAlignment="CENTER">
+               <HBox.margin>
+                  <Insets left="48.0" right="48.0" />
+               </HBox.margin>
+            </Button>
+            <Button id="crearLobby" onAction="#startLobby" styleClass="boton-amongus" text="CREAR LOBBY">
+               <HBox.margin>
+                  <Insets left="48.0" right="48.0" />
+               </HBox.margin>
+            </Button>
+         </children>
+         <VBox.margin>
+            <Insets left="24.0" right="24.0" top="24.0" />
+         </VBox.margin>
+      </HBox>
+        
+    </VBox>
+</AnchorPane>

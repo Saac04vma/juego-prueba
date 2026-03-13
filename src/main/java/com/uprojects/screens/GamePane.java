@@ -107,6 +107,7 @@ public class GamePane extends Pane {
     // Map handler (more like map manager but u get it)
     private MapHandler mapHandler;
     private String mapaActual;
+    private String mapaSeleccionado;
 
     // Colision Checker
     private CollisionChecker collisionChecker;
@@ -118,7 +119,7 @@ public class GamePane extends Pane {
     private Label lblContador;
     private Label lblLocalIP;
 
-    public GamePane(Scene scene, Client cliente, int localID, boolean isHost, GameServer servidor, String nombreJugadorLocal, String colorJugadorLocal, StageManager stageManager) {
+    public GamePane(Scene scene, Client cliente, int localID, boolean isHost, GameServer servidor, String nombreJugadorLocal, String colorJugadorLocal, StageManager stageManager, String mapa) {
 
         this.canvas = new Canvas();
         this.stageManager = stageManager;
@@ -128,6 +129,7 @@ public class GamePane extends Pane {
         this.juegoIniciado = false;
         this.localPlayerName = nombreJugadorLocal;
         this.localPlayerColor = colorJugadorLocal;
+        this.mapaSeleccionado = mapa;
 
 
         if (servidor != null) {
@@ -213,7 +215,13 @@ public class GamePane extends Pane {
         if (isHost) {
             btnEmpezar = new Button("INICIAR PARTIDA");
             btnEmpezar.setDisable(true); // Disabled until 5 players
-            btnEmpezar.setOnAction(e -> cliente.sendTCP(new Red.PaquetePedirInicio()));
+            btnEmpezar.setOnAction(e -> {
+
+                Red.PaquetePedirInicio nuevoJuego = new Red.PaquetePedirInicio();
+                nuevoJuego.mapa = this.mapaSeleccionado;
+
+                cliente.sendTCP(nuevoJuego);
+            });
             lobbyUI.getChildren().add(btnEmpezar);
         }
 
@@ -239,6 +247,7 @@ public class GamePane extends Pane {
             System.out.println("[ADVERTENCIA]: GamePane no tiene scene al comenzar");
         }
 
+        // Comenzamos en el lobby, despues cambiamos al mapa elegido
         this.localPlayer = new Player(keyH, (int) canvas.getWidth(), (int) canvas.getHeight(), tileSize, localPlayerName, localPlayerColor);
         this.mapHandler = new MapHandler();
         this.mapHandler.loadMapFile("lobby.tmx");
@@ -735,6 +744,7 @@ public class GamePane extends Pane {
         this.juegoIniciado = true;
 
         // Cargamos el nuevo mapa
+        this.mapaActual = datos.mapa;
         this.mapHandler.loadMapFile(datos.mapa);
         // Si es impostor, no tiene que hacer tareas
         this.tareasPorHacer = mapHandler.calcularPosicionTareas(this.impostor);

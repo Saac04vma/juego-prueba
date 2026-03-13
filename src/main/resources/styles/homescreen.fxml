@@ -31,17 +31,24 @@
                 <Button styleClass="boton-amongus" text="UNIRSE A PARTIDA" onAction="#joinLobby" />
             </HBox>
             
-            <Button styleClass="boton-amongus" text="CRÉDITOS" onAction="#pantallaCreditos" />
-            
+
             <HBox alignment="CENTER" pickOnBounds="false" spacing="25.0">
+
                 <Button styleClass="boton-amongus" text="COMO JUGAR" onAction="#PantallaComoJugar" />
-                <Button styleClass="boton-amongus" text="ACERCA DE" onAction="#pantallaAcercaDe" /> 
+                <Button styleClass="boton-amongus" text="ACERCA DE" onAction="#pantallaAcercaDe" />
+
             </HBox>
+
+            <HBox alignment="CENTER" pickOnBounds="false" spacing="25.0">
+                <Button styleClass="boton-amongus" text="CRÉDITOS" onAction="#pantallaCreditos" />
+                <Button styleClass="boton-amongus" text="SALIR" onAction="#salirDelJuego" />
+            </HBox>
+
         </VBox>
         
     </VBox>
 
-    <Button styleClass="boton-ajustes" AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="20.0" onAction="#cuentaJugador">
+    <Button styleClass="boton-ajustes" AnchorPane.leftAnchor="20.0" AnchorPane.topAnchor="20.0" onAction="#pantallaConfiguracion">
         <graphic>
             <VBox alignment="CENTER" spacing="5.0" styleClass="contenedor-cuenta">
                 <ImageView fitHeight="80.0" fitWidth="80.0" pickOnBounds="true" preserveRatio="true">
@@ -54,7 +61,7 @@
         </graphic>
     </Button>
 
-    <Button styleClass="boton-ajustes" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0" onAction="#cuentaJugador">
+    <Button styleClass="boton-ajustes" AnchorPane.rightAnchor="20.0" AnchorPane.topAnchor="20.0" onAction="#pantallaConfiguracion">
         <graphic>
             <ImageView fitHeight="60.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true">
                 <image>

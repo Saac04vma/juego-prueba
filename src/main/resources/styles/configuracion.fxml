@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import java.lang.*?>
+<?import javafx.collections.*?>
+
+<AnchorPane prefHeight="720.0" prefWidth="1280.0" stylesheets="@homescreen.css" xmlns="http://javafx.com/javafx/20" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.uprojects.screens.HomeScreen">
+
+    <ImageView fx:id="imgFondo" pickOnBounds="true" preserveRatio="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <image>
+            <Image url="@../images/fondo_binario.jpg" />
+        </image>
+    </ImageView>
+
+    <VBox alignment="CENTER" spacing="25.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+
+        <Label text="CUENTA UNEG" style="-fx-text-fill: white; -fx-font-size: 32px; -fx-font-weight: bold; -fx-font-family: 'Consolas';" />
+
+        <VBox alignment="CENTER" spacing="20.0" style="-fx-background-color: rgba(17, 27, 36, 0.9); -fx-background-radius: 20px; -fx-padding: 50px;">
+
+            <HBox alignment="CENTER" spacing="15.0">
+                <Label text="Nombre de Tripulante:" style="-fx-text-fill: white; -fx-font-size: 18px;" />
+                <TextField fx:id="nombreConfig" prefWidth="250.0" style="-fx-font-size: 16px;" />
+            </HBox>
+
+            <HBox alignment="CENTER" spacing="15.0">
+                <Label text="Color de Traje:" style="-fx-text-fill: white; -fx-font-size: 18px;" />
+                <ComboBox fx:id="cmbColorConfig" prefWidth="250.0" style="-fx-font-size: 16px;">
+                    <items>
+                        <FXCollections fx:factory="observableArrayList">
+                            <String fx:value="Amarillo" />
+                            <String fx:value="Azul" />
+                            <String fx:value="AzulClaro" />
+                            <String fx:value="Gris" />
+                            <String fx:value="Morado" />
+                            <String fx:value="Naranja" />
+                            <String fx:value="Rojo" />
+                            <String fx:value="Rosado" />
+                            <String fx:value="Verde" />
+                            <String fx:value="VerdeOscuro" />
+                        </FXCollections>
+                    </items>
+                </ComboBox>
+            </HBox>
+
+            <HBox alignment="CENTER" spacing="25.0">
+                <Button onAction="#volverAlMenu" styleClass="boton-amongus" text="Volver al Menú" />
+                <Button onAction="#guardarConfiguracion" styleClass="boton-amongus" text="Guardar Cambios" />
+            </HBox>
+
+        </VBox>
+    </VBox>
+</AnchorPane>

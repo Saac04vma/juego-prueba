@@ -13,7 +13,7 @@
     -fx-background-color: transparent; /* Ahora es transparente para que el borde haga el efecto completo */
     -fx-text-fill: white;
     -fx-font-family: 'AmongUsFont', 'Comic Sans MS', sans-serif;
-    -fx-font-size: 50px; 
+    -fx-font-size: 35px;
     -fx-padding: 5px 30px 5px 30px;
     
     -fx-border-color: white;

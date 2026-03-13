@@ -39,7 +39,7 @@ public class Player extends Entidad {
     public void resetValues() {
         this.worldX = tileSize * 16;
         this.worldY = tileSize * 12;
-        this.spd = 6;
+        this.spd = 3;
         this.paused = false;
         this.killed = false;
         this.accion = "right";

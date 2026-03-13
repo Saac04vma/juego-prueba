@@ -22,6 +22,7 @@ module com.uprojects.amongus {
     opens com.uprojects.launcher to javafx.graphics;
     opens com.uprojects.screens to javafx.fxml;
     opens com.uprojects.ui to javafx.fxml;
+    opens com.uprojects.core to com.esotericsoftware.kryo;
     opens maps to libtiled, javafx.graphics;
 
 }

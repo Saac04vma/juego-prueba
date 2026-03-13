@@ -15,9 +15,12 @@ import java.util.ResourceBundle;
 
 public class CodigoNumericoPane extends TareaPane implements Initializable {
 
-    @FXML private Label lblCodigoObjetivo;
-    @FXML private Label lblCodigoIngresado;
-    @FXML private Label lblEstado;
+    @FXML
+    private Label lblCodigoObjetivo;
+    @FXML
+    private Label lblCodigoIngresado;
+    @FXML
+    private Label lblEstado;
 
     private CodigoNumericoTarea tareaCodigo;
 
@@ -40,6 +43,13 @@ public class CodigoNumericoPane extends TareaPane implements Initializable {
     @Override
     public void actualizarUI() {
         // Requerido por TareaPane, pero lo dejamos vacío
+
+        String ingresado = tareaCodigo.getCodigoIngresado();
+        StringBuilder display = new StringBuilder(ingresado);
+        while (display.length() < 5) {
+            display.append("_");
+        }
+        lblCodigoIngresado.setText(display.toString());
     }
 
     @Override
@@ -49,7 +59,7 @@ public class CodigoNumericoPane extends TareaPane implements Initializable {
             tareaCodigo = (CodigoNumericoTarea) tarea;
             lblCodigoObjetivo.setText("CÓDIGO: " + tareaCodigo.getCodigoObjetivo());
             tareaCodigo.limpiarIngreso();
-            actualizarDisplay();
+            actualizarUI();
             lblEstado.setText("");
         }
     }
@@ -67,7 +77,7 @@ public class CodigoNumericoPane extends TareaPane implements Initializable {
         String numeroPulsado = btn.getText();
 
         tareaCodigo.agregarDigito(numeroPulsado);
-        actualizarDisplay();
+        actualizarUI();
 
         // Validar si ya ingresó los 5 números
         if (tareaCodigo.getCodigoIngresado().length() == 5) {
@@ -75,32 +85,29 @@ public class CodigoNumericoPane extends TareaPane implements Initializable {
                 lblEstado.setText("CORRECTO");
                 lblEstado.setTextFill(Color.GREEN);
                 tareaCodigo.actualizarTarea(1.0); // Marca como completada
-                
+
                 if (onTareaCompletada != null) onTareaCompletada.run();
-                
+
                 // Retraso de casi 1 seg para que el jugador vea que ganó antes de cerrarse
                 new java.util.Timer().schedule(
-                    new java.util.TimerTask() {
-                        @Override
-                        public void run() {
-                            javafx.application.Platform.runLater(() -> uiCerrarTarea());
-                        }
-                    }, 800
+                        new java.util.TimerTask() {
+                            @Override
+                            public void run() {
+                                javafx.application.Platform.runLater(() -> uiCerrarTarea());
+                            }
+                        }, 800
                 );
             } else {
                 lblEstado.setText("ERROR");
                 lblEstado.setTextFill(Color.RED);
-                actualizarDisplay(); 
+                actualizarUI();
             }
         }
     }
 
+    /*
     private void actualizarDisplay() {
-        String ingresado = tareaCodigo.getCodigoIngresado();
-        StringBuilder display = new StringBuilder(ingresado);
-        while (display.length() < 5) {
-            display.append("_");
-        }
-        lblCodigoIngresado.setText(display.toString());
     }
+
+     */
 }

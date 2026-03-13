@@ -92,6 +92,10 @@ public abstract class Tarea {
     public void cerrarTarea() {
     }
 
+    public void setCompletada(boolean finalizada) {
+        this.completada = finalizada;
+    }
+
     public boolean fueCompletada() {
         return this.completada;
     }

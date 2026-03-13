@@ -1,6 +1,7 @@
 package com.uprojects.server;
 
 import com.esotericsoftware.kryo.Kryo;
+import com.uprojects.core.Tarea;
 
 public class Red {
 
@@ -80,7 +81,7 @@ public class Red {
 
     public static class PaqueteTareaCompletada {
         public int idJugador;
-        // Puedes añadir el ID de la tarea si necesitas saber cuál hizo
+        public String tipoTarea;
     }
 
     public static class PaqueteActualizarTareasRestantes {

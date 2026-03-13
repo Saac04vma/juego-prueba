@@ -19,6 +19,7 @@ public class GameServer extends Listener {
     private HashMap<Integer, Integer> votos;
     private HashMap<String, Integer> coloresDisponibles;
     private static final String[] colores = {"Amarillo", "Azul", "AzulClaro", "Gris", "Morado", "Naranja", "Rojo", "Rosado", "Verde", "VerdeOscuro"};
+    private String mapaElegido;
     private final int MIN_JUGADORES = 2;
     private final int MAX_JUGADORES = 10;
     private int votosRecibidos;
@@ -115,14 +116,14 @@ public class GameServer extends Listener {
     @Override
     public void received(Connection conexion, Object paquete) {
 
-        if (paquete instanceof Red.PaquetePedirInicio) {
+        if (paquete instanceof Red.PaquetePedirInicio datos) {
             if (conexion.getID() == 1 && jugadores.size() >= MIN_JUGADORES) {
                 if (jugadores.size() >= 7) {
                     this.cantImpostores = 2;
                 } else {
                     this.cantImpostores = 1;
                 }
-                iniciarJuego(conexion);
+                iniciarJuego(conexion, datos);
             }
         }
 
@@ -406,7 +407,7 @@ public class GameServer extends Listener {
     }
 
 
-    private void iniciarJuego(Connection conexion) {
+    private void iniciarJuego(Connection conexion, Red.PaquetePedirInicio paquete) {
 
         // Por si acaso revisamos si el juego ya habia comenzado
         if (juegoIniciado)
@@ -426,14 +427,23 @@ public class GameServer extends Listener {
         int idImpostor1 = idJugadores.get(0);
         int idImpostor2 = idJugadores.get(1);
 
+        this.mapaElegido = paquete.mapa;
 
         // Se lo mandamos a cada conexion, es decir, a cada jugador conectado al servidor
         //for (Connection conexion : server.getConnections()) {
         Red.PaqueteIniciarJuego iniciarJuego = new Red.PaqueteIniciarJuego();
-        iniciarJuego.mapa = "mapa1.tmx";
+        iniciarJuego.mapa = paquete.mapa;
         // Por ahora lo mandamos a la biblioteca, tenemos que calcular esto mejor al tener dos mapas
-        iniciarJuego.inicioX = 512;
-        iniciarJuego.inicioY = 384;
+
+        if (this.mapaElegido == "mapa1.tmx") {
+            iniciarJuego.inicioX = 512;
+            iniciarJuego.inicioY = 384;
+        } else {
+
+            iniciarJuego.inicioX = 640;
+            iniciarJuego.inicioY = 550;
+        }
+
         iniciarJuego.tareasRestantes = this.tareasRestantes;
         iniciarJuego.colorJugadorLocal = jugadores.get(conexion.getID()).color;
 

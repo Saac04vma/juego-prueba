@@ -36,11 +36,16 @@ public class HomeScreen extends ControladorPantalla {
     private Client cliente;
     private GameServer servidorLocal;
     private PerfilJugador perfilLocal;
+    private String mapaSeleccionado = "mapa1.tmx"; // Un valor por defecto porsia
 
     @FXML
     private TextField nombreConfig;
     @FXML
     private ComboBox<String> cmbColorConfig;
+    @FXML
+    private Button villaAsiaSuperior;
+    @FXML
+    private Button villaAsiaInferior;
 
 
     public HomeScreen(StageManager stageManager) {
@@ -56,7 +61,6 @@ public class HomeScreen extends ControladorPantalla {
         perfilLocal = new PerfilJugador();
 
 
-
     }
 
     @FXML
@@ -67,6 +71,8 @@ public class HomeScreen extends ControladorPantalla {
             nombreConfig.setText(perfilLocal.getNombre());
             cmbColorConfig.setValue(perfilLocal.getColor());
         }
+
+
     }
 
     @FXML
@@ -98,7 +104,7 @@ public class HomeScreen extends ControladorPantalla {
             conexion.colorJugador = perfilLocal.getColor().isEmpty() ? "Amarillo" : perfilLocal.getColor();
             conexion.idJugador = cliente.getID();
 
-            GamePane lobby = new GamePane(stageManager.scene, cliente, cliente.getID(), true, servidorLocal, conexion.nombreJugador, conexion.colorJugador, stageManager);
+            GamePane lobby = new GamePane(stageManager.scene, cliente, cliente.getID(), true, servidorLocal, conexion.nombreJugador, conexion.colorJugador, stageManager, this.mapaSeleccionado);
 
             configurarRedListeners(lobby);
 
@@ -137,7 +143,8 @@ public class HomeScreen extends ControladorPantalla {
                 cliente.start();
 
 
-                GamePane lobby = new GamePane(stageManager.scene, cliente, 0, false, null, perfilLocal.getNombre(), perfilLocal.getColor(), stageManager);
+                // Le pasamos el mapa seleccionado, pero es un placeholder, el servidor le mandará el mapa real cuando comience
+                GamePane lobby = new GamePane(stageManager.scene, cliente, 0, false, null, perfilLocal.getNombre(), perfilLocal.getColor(), stageManager, this.mapaSeleccionado);
                 configurarRedListeners(lobby);
                 // Nos conectamos a la IP que el usuario proporsiono
                 cliente.connect(5000, ipHost, Red.TCP_PORT, Red.UDP_PORT);
@@ -280,7 +287,6 @@ public class HomeScreen extends ControladorPantalla {
             public void received(Connection conexion, Object objeto) {
 
                 if (objeto instanceof Red.PaqueteLobbyInfo paquete) {
-                    boolean soyAnfitrion = conexion.getID() == 1;
                     paneActual.actualizarLobby(paquete);
                 }
 
@@ -445,6 +451,44 @@ public class HomeScreen extends ControladorPantalla {
 
         } catch (IOException e) {
             showAlert("Ups", "Error regresando al menu: " + e.getMessage());
+        }
+    }
+
+    public void pantallaSeleccionMapa(ActionEvent event) {
+        try {
+
+            // Cambiar el fxml al de creditos
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/styles/seleccionMapa.fxml"));
+            Parent root = loader.load();
+            HomeScreen controller = loader.getController();
+            controller.setStageManager(this.stageManager);
+            this.stageManager.setRoot(root, "Seleccion de Mapa");
+
+
+        } catch (IOException e) {
+            showAlert("Ups", "Error cargando la pantalla de seleccion de mapas: " + e.getMessage());
+        }
+    }
+
+
+    public void setMapa(ActionEvent event) {
+
+
+        // No se han inicializado
+        if (villaAsiaInferior == null || villaAsiaSuperior == null) {
+            System.out.println("No se han inicializado los botones");
+
+            return;
+        }
+
+        if (event.getSource() == villaAsiaSuperior) {
+            System.out.println("Setteando mapa a mapa1");
+            villaAsiaSuperior.requestFocus();
+            this.mapaSeleccionado = "mapa1.tmx";
+        } else if (event.getSource() == villaAsiaInferior) {
+            System.out.println("Setteando mapa a mapa2");
+            villaAsiaInferior.requestFocus();
+            this.mapaSeleccionado = "mapa2.tmx";
         }
     }
 
